@@ -1,0 +1,10 @@
+# Secrets never go to GitHub
+.env
+*.env
+
+# Generated or machine-specific files
+__pycache__/
+local/cache/
+node_modules/
+.netlify/
+.DS_Store

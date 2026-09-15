@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kestrel Electronics · Shopping assistant demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --evergreen:#0D4A45; --evergreen-2:#0A3935; --mint:#3FB58F; --mint-soft:#E3F4EE;
+  --surface:#F3F6F5; --card:#FFFFFF; --ink:#17201F; --muted:#5B6866; --line:#D9E1DF;
+  --sale:#B3261E; --brave:#FB542B;
+  --font:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);color:var(--ink);background:var(--surface);font-size:16px;line-height:1.5}
+a{color:var(--evergreen)}
+button,input,textarea{font:inherit}
+:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+
+/* Header */
+.topbar{background:var(--evergreen);color:#fff}
+.topbar-inner{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:24px;padding:14px 24px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;letter-spacing:-.02em;color:#fff;text-decoration:none;white-space:nowrap}
+.logo svg{flex:none}
+.search{flex:1;display:flex;background:#fff;border-radius:6px;overflow:hidden;min-width:0}
+.search input{flex:1;border:0;padding:11px 14px;min-width:0;color:var(--ink)}
+.search button{border:0;background:var(--mint);color:var(--evergreen-2);font-weight:700;padding:0 18px;cursor:pointer}
+.util{display:flex;gap:20px;font-size:14px;white-space:nowrap}
+.util span{opacity:.9}
+.catnav{background:var(--evergreen-2)}
+.catnav ul{max-width:1320px;margin:0 auto;padding:0 24px;display:flex;gap:26px;list-style:none;overflow-x:auto}
+.catnav li{color:#cfe3df;font-size:14px;padding:9px 0;white-space:nowrap}
+.catnav li.on{color:#fff;box-shadow:inset 0 -3px 0 var(--mint)}
+
+/* Layout */
+.promo{background:var(--evergreen-2);color:#dff1ec;text-align:center;font-size:14px;padding:7px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+.promo b{color:#fff}
+.promo a{color:var(--mint);font-weight:600}
+.page{max-width:1120px;margin:0 auto;padding:18px 24px 120px}
+.hero{background:#10201E;color:#fff;border-radius:10px;padding:34px 36px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;gap:24px;overflow:hidden}
+.hero h1{font-size:40px;line-height:1.05;letter-spacing:-.03em;margin:0 0 10px}
+.hero p{margin:0 0 18px;color:#bcd3cf;max-width:34ch}
+.hero .btn-primary{background:var(--mint);color:var(--evergreen-2)}
+.hero svg{flex:none}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:14px}
+
+/* Product */
+.product{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:28px;display:grid;grid-template-columns:260px 1fr;gap:32px}
+.gallery{background:var(--surface);border-radius:6px;display:grid;place-items:center;padding:28px 0}
+.product h1{font-size:30px;line-height:1.15;letter-spacing:-.02em;margin:0 0 6px}
+.sku{color:var(--muted);font-size:13px;margin:0 0 18px}
+.price{font-size:15px;color:var(--muted);margin:0 0 18px}
+.price strong{display:block;font-size:22px;color:var(--ink)}
+.opt-label{font-size:14px;font-weight:600;margin:0 0 8px}
+.swatches{display:flex;gap:10px;margin-bottom:22px}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+.swatch[aria-pressed="true"]{box-shadow:0 0 0 2px var(--evergreen)}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn{border:0;border-radius:6px;padding:12px 22px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--evergreen);color:#fff}
+.btn-ghost{background:#fff;color:var(--evergreen);box-shadow:inset 0 0 0 1.5px var(--evergreen)}
+.fulfil{margin-top:22px;border-top:1px solid var(--line);padding-top:16px;font-size:14px;color:var(--muted);display:grid;gap:6px}
+.fulfil b{color:var(--ink);font-weight:600}
+.ask-inline{margin-top:24px;background:var(--mint-soft);border-radius:6px;padding:14px 16px;font-size:15px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+
+/* Assistant */
+.assistant{position:fixed;right:24px;bottom:24px;z-index:20;width:410px;height:min(680px,calc(100vh - 48px));background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(13,74,69,.22),0 2px 6px rgba(13,74,69,.12)}
+.assistant[hidden]{display:none}
+.a-head{background:var(--evergreen);color:#fff}
+.a-head p{color:#cfe3df!important}
+.a-close{border:0;background:transparent;color:#fff;font-size:22px;line-height:1;cursor:pointer;padding:4px 6px;border-radius:6px}
+.launcher{position:fixed;right:24px;bottom:24px;z-index:19;border:0;border-radius:999px;background:var(--evergreen);color:#fff;font-weight:700;padding:14px 20px;cursor:pointer;box-shadow:0 10px 30px rgba(13,74,69,.3);display:flex;gap:8px;align-items:center}
+.greet{font-weight:700;font-size:17px;color:var(--ink);margin:0 0 4px}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.quick button{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer;color:var(--ink);text-align:left}
+.quick button:hover{border-color:var(--evergreen)}
+.consent{font-size:13px;color:var(--muted);margin:16px 0 0}
+.a-head{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.a-head h2{font-size:17px;margin:0}
+.a-head p{margin:0;font-size:13px;color:var(--muted)}
+.mode{font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--surface);color:var(--muted);white-space:nowrap}
+.mode.live{background:var(--mint-soft);color:var(--evergreen)}
+.mode.replay{background:#FFF1D6;color:#7A4B00}
+.mode.sample{background:#F0E7F7;color:#5A2D82}
+.thread{position:relative;flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:16px}
+.empty{color:var(--muted);font-size:15px}
+.chip{display:block;text-align:left;width:100%;margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:pointer;color:var(--ink)}
+.chip:hover{border-color:var(--mint)}
+.msg-user{align-self:flex-end;max-width:85%;background:var(--evergreen);color:#fff;padding:10px 14px;border-radius:14px 14px 4px 14px}
+.msg-bot{max-width:100%}
+.summary{margin:0 0 12px}
+.pc h3{font-size:14px;margin:14px 0 6px;display:flex;align-items:center;gap:6px}
+.pc ul{margin:0;padding-left:0;list-style:none;display:grid;gap:6px}
+.pc li{padding-left:22px;position:relative;font-size:15px}
+.pc li::before{position:absolute;left:0;top:0;font-weight:800}
+.pros li::before{content:"+";color:var(--evergreen)}
+.cons li::before{content:"–";color:var(--sale)}
+.cite{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin-left:3px;border-radius:5px;border:0;background:var(--mint-soft);color:var(--evergreen);font-size:12px;font-weight:700;cursor:pointer;vertical-align:1px}
+.verdict{margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--mint);background:var(--surface);font-weight:600;font-size:15px}
+.note{font-size:14px;color:#7A4B00;background:#FFF1D6;border-radius:6px;padding:8px 10px;margin:0 0 10px}
+.sources{margin-top:14px;display:grid;gap:8px}
+.sources h3{font-size:14px;margin:0}
+.src{display:grid;grid-template-columns:24px 1fr;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;text-decoration:none;color:var(--ink);transition:background .3s,border-color .3s}
+.src b{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.src span{color:var(--muted)}
+.src .snip{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.src .n{font-weight:700;color:var(--evergreen)}
+.src.flash{background:var(--mint-soft);border-color:var(--mint)}
+details.hood{margin-top:12px;font-size:13px;border-top:1px dashed var(--line);padding-top:10px}
+details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
+.hood dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:10px 0 0}
+.hood dt{color:var(--muted)}
+.hood dd{margin:0;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.error{color:var(--sale);font-size:14px;background:#FCEBEA;border-radius:6px;padding:10px 12px}
+.typing{display:flex;gap:10px;align-items:center;color:var(--muted);font-size:14px}
+.dots{display:flex;gap:4px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--mint);animation:b 1s infinite ease-in-out}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px;align-items:flex-end}
+.codebar{border-top:1px solid var(--line);padding:10px 12px 0;display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.codebar[hidden]{display:none}
+.codebar input{flex:1;border:1px solid var(--line);border-radius:6px;padding:7px 10px;color:var(--ink)}
+.fallback{margin-top:8px;border:0;background:none;color:var(--evergreen);font-weight:700;text-decoration:underline;cursor:pointer;padding:0}
+.composer textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:46px;max-height:120px;color:var(--ink)}
+.composer button{border:0;border-radius:8px;background:var(--evergreen);color:#fff;font-weight:700;padding:12px 16px;cursor:pointer}
+.composer button:disabled{opacity:.5;cursor:default}
+.powered{display:flex;align-items:center;gap:6px;justify-content:center;font-size:12px;color:var(--muted);padding:0 0 10px}
+.powered i{width:8px;height:8px;border-radius:2px;background:var(--brave);display:inline-block}
+
+@media (max-width:640px){
+  .assistant{right:0;bottom:0;width:100%;height:100%;border-radius:0}
+  .hero{padding:24px}
+  .hero h1{font-size:30px}
+  .hero svg{display:none}
+}
+@media (max-width:640px){
+  .topbar-inner{flex-wrap:wrap;gap:12px;padding:12px 16px}
+  .util{display:none}
+  .search{order:3;flex-basis:100%}
+  .page{padding:14px 16px 32px}
+  .product{grid-template-columns:1fr;padding:20px;gap:20px}
+  .product h1{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="promo"><b>Fall tech event</b> ends Sunday. Trade in your phone for extra credit. <a href="#">Shop deals</a></div>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="#" aria-label="Kestrel Electronics home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#3FB58F"/><path d="M7 21 L15 8 L23 21 L15 16 Z" fill="#0A3935"/></svg>
+      Kestrel
+    </a>
+    <form class="search" role="search" onsubmit="event.preventDefault()">
+      <input type="search" aria-label="Search products" placeholder="Search phones, laptops, TVs…">
+      <button type="submit">Search</button>
+    </form>
+    <div class="util"><span>Store: Northgate</span><span>Account</span><span>Cart (0)</span></div>
+  </div>
+  <nav class="catnav" aria-label="Departments">
+    <ul><li>Deals</li><li class="on">Cell phones</li><li>Computers</li><li>TV &amp; home theater</li><li>Audio</li><li>Smart home</li><li>Gaming</li></ul>
+  </nav>
+</header>
+
+<main class="page">
+  <section>
+    <div class="crumbs">Cell phones › Unlocked phones › Apple</div>
+    <div class="hero">
+      <div>
+        <h1>The iPhone 18 lineup is here</h1>
+        <p>Trade in an eligible phone and put the credit toward your upgrade.</p>
+        <button class="btn btn-primary" id="heroAsk">Not sure? Ask if it's worth it</button>
+      </div>
+      <svg width="210" height="150" viewBox="0 0 210 150" aria-hidden="true">
+        <rect x="18" y="14" width="72" height="136" rx="14" fill="#2F6F66"/>
+        <rect x="24" y="20" width="60" height="124" rx="10" fill="#3FB58F" opacity=".35"/>
+        <rect x="110" y="4" width="80" height="146" rx="16" fill="#1C2A28" stroke="#3FB58F" stroke-width="2"/>
+        <circle cx="132" cy="28" r="9" fill="#10201E" stroke="#7FD6B6"/>
+        <circle cx="154" cy="28" r="9" fill="#10201E" stroke="#7FD6B6"/>
+        <circle cx="143" cy="48" r="9" fill="#10201E" stroke="#7FD6B6"/>
+      </svg>
+    </div>
+    <article class="product">
+      <div class="gallery" aria-hidden="true">
+        <svg width="140" height="270" viewBox="0 0 140 270">
+          <rect x="4" y="4" width="132" height="262" rx="24" fill="#1C2A28"/>
+          <rect x="11" y="11" width="118" height="248" rx="18" fill="#2F6F66"/>
+          <rect x="50" y="18" width="40" height="11" rx="5.5" fill="#1C2A28"/>
+          <rect x="24" y="200" width="92" height="10" rx="5" fill="#7FD6B6" opacity=".55"/>
+          <rect x="24" y="218" width="60" height="10" rx="5" fill="#7FD6B6" opacity=".35"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Apple iPhone 18</h1>
+        <p class="sku">Unlocked · Demo listing</p>
+        <p class="price"><strong>See price in cart</strong>Trade in your current phone for credit at checkout</p>
+        <p class="opt-label">Color</p>
+        <div class="swatches" role="group" aria-label="Color">
+          <button class="swatch" style="background:#2B2E33" aria-label="Dark" aria-pressed="true"></button>
+          <button class="swatch" style="background:#E7E4DD" aria-label="Light" aria-pressed="false"></button>
+          <button class="swatch" style="background:#6E8FA8" aria-label="Blue" aria-pressed="false"></button>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary">Add to cart</button>
+          <button class="btn btn-ghost">Compare</button>
+        </div>
+        <div class="fulfil">
+          <div><b>Pickup:</b> Ready today at Northgate</div>
+          <div><b>Delivery:</b> Free shipping on this item</div>
+        </div>
+        <div class="ask-inline">
+          <span>Wondering if it's worth upgrading? Ask the assistant.</span>
+          <button class="btn btn-ghost" id="askInline">Ask about upgrading</button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <aside class="assistant" id="assistant" aria-label="Kestrel help">
+    <div class="a-head">
+      <div><h2>Kestrel help</h2><p>Answers from current independent reviews</p></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="mode" id="mode">Checking…</span>
+        <button class="a-close" id="closeChat" aria-label="Close help">×</button>
+      </div>
+    </div>
+    <div class="thread" id="thread" aria-live="polite">
+      <div class="empty" id="empty">
+        <p class="greet">Hi, how can I help you?</p>
+        Pick a topic or type your own question.
+        <div class="quick">
+          <button data-q="I have an iPhone 16. Should I upgrade to the iPhone 18? Give me some pros and cons." id="suggest">Should I upgrade from my iPhone 16?</button>
+          <button data-q="How does the iPhone 18 camera compare to the iPhone 16 camera, according to reviews?">Camera: iPhone 18 vs 16</button>
+          <button data-q="What do reviewers say about iPhone 18 battery life?">Battery life reviews</button>
+          <button data-q="Which iPhone 18 model is the best value, according to reviews?">Which model is best value?</button>
+        </div>
+        <p class="consent">Answers are generated from web sources and include links so you can check them. Confirm details before you buy.</p>
+      </div>
+    </div>
+    <div class="codebar" id="codebar" hidden>
+      <label for="code">Access code</label>
+      <input id="code" type="password" autocomplete="off" placeholder="Needed for live answers">
+    </div>
+    <form class="composer" id="composer">
+      <textarea id="q" rows="1" aria-label="Your question" placeholder="Ask about this product…"></textarea>
+      <button type="submit" id="send">Ask</button>
+    </form>
+    <div class="powered"><i></i>Answers powered by the Brave Search API</div>
+  </aside>
+  <button class="launcher" id="openChat" hidden>💬 Ask Kestrel</button>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const thread = $("#thread"), q = $("#q"), send = $("#send");
+let turn = 0;
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v; else n.setAttribute(k, v);
+  }
+  kids.flat().forEach(c => c && n.append(c));
+  return n;
+}
+const safeUrl = u => /^https?:\/\//i.test(u || "") ? u : "#";
+const scrollDown = () => thread.scrollTop = thread.scrollHeight;
+
+let siteMode = "live";
+fetch("/api/status").then(r => r.json()).then(s => {
+  siteMode = s.mode;
+  if (s.access_code_required) $("#codebar").hidden = false;
+  const m = $("#mode");
+  const labels = { live: "Live", replay: "Replay (recorded)", sample: "Sample data" };
+  m.textContent = labels[s.mode] || s.mode;
+  m.className = "mode " + s.mode;
+  if (s.mode === "live" && !s.brave_key) { m.textContent = "Live · Brave key missing"; m.className = "mode"; }
+}).catch(() => { $("#mode").textContent = "Server offline"; });
+
+function citeButtons(ids, t) {
+  return (ids || []).map(n => {
+    const b = el("button", { class: "cite", type: "button", "aria-label": "Show source " + n, text: n });
+    b.onclick = () => {
+      const card = document.getElementById(`src-${t}-${n}`);
+      if (!card) return;
+      thread.scrollTo({ top: card.offsetTop - 60, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      card.classList.add("flash"); setTimeout(() => card.classList.remove("flash"), 1400);
+    };
+    return b;
+  });
+}
+
+function inline(text, t, known) {
+  const out = [];
+  text.split(/(\*\*[^*]+\*\*|\[\d+\])/).forEach(part => {
+    if (!part) return;
+    const bold = part.match(/^\*\*([^*]+)\*\*$/);
+    const cite = part.match(/^\[(\d+)\]$/);
+    if (bold) out.push(el("strong", { text: bold[1] }));
+    else if (cite && known.has(+cite[1])) out.push(...citeButtons([+cite[1]], t));
+    else out.push(part);
+  });
+  return out;
+}
+
+function renderProse(text, t, known) {
+  const frag = [];
+  let list = null, kind = "pros";
+  const close = () => { list = null; };
+  text.split(/\n+/).forEach(raw => {
+    const line = raw.trim();
+    if (!line) return close();
+    const head = line.match(/^#{1,6}\s+(.*)$/) || line.match(/^\*\*([^*]+?):?\*\*:?$/) || line.match(/^(reasons to (?:upgrade|wait)[^:]*):?$/i);
+    const item = line.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
+    if (head) {
+      close();
+      const h = head[1].replace(/:$/, "");
+      kind = /wait|con|against|downside/i.test(h) ? "cons" : "pros";
+      frag.push(el("div", { class: "pc " + kind }, el("h3", { text: h })));
+    } else if (item) {
+      if (!list) {
+        list = el("ul");
+        const last = frag[frag.length - 1];
+        if (last && last.classList && last.classList.contains("pc") && !last.querySelector("ul")) last.append(list);
+        else frag.push(el("div", { class: "pc " + kind }, list));
+      }
+      list.append(el("li", {}, ...inline(item[1], t, known)));
+    } else if (/^bottom line:/i.test(line)) {
+      close();
+      frag.push(el("p", { class: "verdict" }, ...inline(line, t, known)));
+    } else {
+      close();
+      frag.push(el("p", { class: "summary" }, ...inline(line, t, known)));
+    }
+  });
+  return frag;
+}
+
+function renderAnswer(d) {
+  const t = ++turn;
+  const box = el("div", { class: "msg-bot" });
+  if (d.answer_note) box.append(el("p", { class: "note", text: d.answer_note }));
+  const known = new Set((d.sources || []).map((s, i) => s.number ?? i + 1));
+  if (d.answer_text) box.append(...renderProse(d.answer_text, t, known));
+  const a = d.answer;
+  if (a) {
+    box.append(el("p", { class: "summary", text: a.summary || "" }));
+    const list = (items, cls, title) => el("div", { class: "pc " + cls },
+      el("h3", { text: title }),
+      el("ul", {}, (items || []).map(i => el("li", {}, i.text, ...citeButtons(i.sources, t)))));
+    box.append(list(a.pros, "pros", "Reasons to upgrade"), list(a.cons, "cons", "Reasons to wait"));
+    if (a.verdict) box.append(el("p", { class: "verdict", text: a.verdict }));
+  }
+  if (d.sources && d.sources.length) {
+    box.append(el("div", { class: "sources" }, el("h3", { text: "Sources" }),
+      d.sources.map((s, i) => el("a", { class: "src", id: `src-${t}-${s.number ?? i + 1}`, href: safeUrl(s.url), target: "_blank", rel: "noopener" },
+        el("span", { class: "n", text: s.number ?? i + 1 }),
+        el("div", {}, el("b", { text: s.title }), el("span", { class: "snip", text: (s.title === s.site && s.description) ? s.description : (s.site || s.url) }))))));
+  }
+  const b = d.brave || {};
+  const u = b.usage || {};
+  const usageRows = Object.keys(u).length ? [
+    el("dt", { text: "Searches run" }), el("dd", { text: String(u["Queries"] ?? "–") }),
+    el("dt", { text: "Tokens in / out" }), el("dd", { text: `${u["Tokens-In"] ?? "–"} / ${u["Tokens-Out"] ?? "–"}` }),
+    el("dt", { text: "Cost of this answer" }), el("dd", { text: u["Total-Cost"] != null ? "$" + Number(u["Total-Cost"]).toFixed(4) : "–" }),
+  ] : [];
+  const ep = (b.endpoint || "");
+  box.append(el("details", { class: "hood" }, el("summary", { text: "Under the hood" }),
+    el("dl", {},
+      el("dt", { text: "Mode" }), el("dd", { text: d.mode + (d.engine ? " · " + d.engine : "") }),
+      el("dt", { text: "Endpoint" }), el("dd", { text: /^(GET|POST) /.test(ep) ? ep : "GET " + ep }),
+      el("dt", { text: "Question sent" }), el("dd", { text: b.query || "" }),
+      el("dt", { text: "Params" }), el("dd", { text: JSON.stringify(b.params || {}) }),
+      el("dt", { text: "Results" }), el("dd", { text: String(b.result_count ?? "") }),
+      el("dt", { text: "Brave time" }), el("dd", { text: (b.latency_ms ?? "–") + " ms" }),
+      el("dt", { text: "Total time" }), el("dd", { text: (d.total_ms ?? "–") + " ms" }),
+      ...usageRows)));
+  thread.append(box);
+}
+
+async function showRecorded() {
+  try {
+    const r = await fetch("/replay.json", { cache: "no-store" });
+    const d = await r.json();
+    d.mode = "replay";
+    renderAnswer(d);
+  } catch (e) {
+    thread.append(el("div", { class: "error", text: "The recorded answer isn't available." }));
+  }
+  scrollDown();
+}
+
+async function ask(text) {
+  text = text.trim();
+  if (!text) return;
+  $("#empty")?.remove();
+  thread.append(el("div", { class: "msg-user", text }));
+  q.value = ""; send.disabled = true;
+  const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), "Brave is searching and writing an answer…");
+  thread.append(wait); scrollDown();
+  const showError = (msg) => {
+    const box = el("div", { class: "error", text: msg });
+    const btn = el("button", { class: "fallback", type: "button", text: "Show the recorded answer instead" });
+    btn.onclick = () => { btn.remove(); showRecorded(); };
+    box.append(el("div", {}, btn));
+    thread.append(box);
+  };
+  try {
+    if (siteMode === "replay") { wait.remove(); await showRecorded(); send.disabled = false; return; }
+    const r = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: text, code: $("#code").value }) });
+    const d = await r.json();
+    wait.remove();
+    if (!r.ok) showError(d.error || "The request failed.");
+    else renderAnswer(d);
+  } catch (e) {
+    wait.remove();
+    showError("Can't reach the demo server right now.");
+  }
+  send.disabled = false; scrollDown(); q.focus();
+}
+
+$("#composer").addEventListener("submit", e => { e.preventDefault(); ask(q.value); });
+q.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(q.value); } });
+document.querySelectorAll(".quick button").forEach(b => b.onclick = () => ask(b.dataset.q));
+const openChat = () => { $("#assistant").hidden = false; $("#openChat").hidden = true; q.focus(); };
+$("#closeChat").onclick = () => { $("#assistant").hidden = true; $("#openChat").hidden = false; $("#openChat").focus(); };
+$("#openChat").onclick = openChat;
+$("#heroAsk").onclick = () => { openChat(); ask("I have an iPhone 16. Should I upgrade to the iPhone 18? Give me some pros and cons."); };
+$("#askInline").onclick = () => openChat() || ask("I have an iPhone 16. Should I upgrade to the iPhone 18? Give me some pros and cons.");
+document.querySelectorAll(".swatch").forEach(s => s.onclick = () => {
+  document.querySelectorAll(".swatch").forEach(x => x.setAttribute("aria-pressed", x === s));
+});
+</script>
+</body>
+</html>

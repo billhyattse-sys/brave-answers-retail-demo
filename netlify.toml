@@ -1,0 +1,4 @@
+# Netlify reads this file on every deploy.
+[build]
+  publish   = "public"              # the website files
+  functions = "netlify/functions"   # the server-side Brave call

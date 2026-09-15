@@ -1,0 +1,49 @@
+{
+  "engine": "brave-answers",
+  "question": "I have an iPhone 16. Should I upgrade to the iPhone 18? Give me some pros and cons.",
+  "answer": null,
+  "answer_text": "This is sample text for checking the layout, not a real answer.[1] Record a live run to get real, cited content.[2]\n\n## Reasons to upgrade\n- Sample pro point with a citation.[1]\n- Second sample pro point.[3]\n- Third sample pro point.[2]\n\n## Reasons to wait\n- Sample con point with a citation.[2]\n- Second sample con point.[3]\n- Third sample con point.[1]\n\nBottom line: Sample verdict line. Switch to live mode for a real recommendation.",
+  "answer_note": null,
+  "sources": [
+    {
+      "number": 1,
+      "title": "example.com",
+      "url": "https://example.com/review-1",
+      "description": "Placeholder source for layout testing.",
+      "site": "example.com"
+    },
+    {
+      "number": 2,
+      "title": "example.com",
+      "url": "https://example.com/review-2",
+      "description": "Placeholder source for layout testing.",
+      "site": "example.com"
+    },
+    {
+      "number": 3,
+      "title": "example.com",
+      "url": "https://example.com/review-3",
+      "description": "Placeholder source for layout testing.",
+      "site": "example.com"
+    }
+  ],
+  "brave": {
+    "endpoint": "POST /res/v1/chat/completions",
+    "query": "(sample)",
+    "params": {
+      "model": "brave",
+      "stream": true,
+      "enable_citations": true,
+      "country": "us"
+    },
+    "latency_ms": 0,
+    "result_count": 3,
+    "usage": {
+      "Queries": 1,
+      "Tokens-In": 0,
+      "Tokens-Out": 0,
+      "Total-Cost": 0
+    }
+  },
+  "total_ms": 0
+}
