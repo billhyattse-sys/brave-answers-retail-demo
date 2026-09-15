@@ -1,6 +1,6 @@
 # Brave Answers Retail Assistant
 
-A sample app that shows how a retailer can answer shoppers' buying questions with **current, cited web information** using the [Brave Search API](https://api-dashboard.search.brave.com/). A fictional store, Kestrel Electronics, adds a help widget to its product page. A shopper asks, "Should I upgrade from my iPhone 16?" and gets pros, cons, and a bottom line, with every claim linked to its source.
+A sample app that shows how a retailer can answer shoppers' buying questions with **current, cited web information** using the [Brave Search API](https://api-dashboard.search.brave.com/). A fictional store, Lionheart Electronics, adds a help widget to its product page. A shopper asks, "Should I upgrade from my iPhone 16?" and gets pros, cons, and a bottom line, with every claim linked to its source.
 
 ## How it works
 
@@ -65,4 +65,4 @@ Open http://127.0.0.1:8000. Successful answers are saved to `local/cache/last_re
 
 - Brave only returns citations when streaming, so the function reads the stream and assembles the answer before replying.
 - Each answer includes Brave's usage data. The "Under the hood" panel shows the searches run, tokens, and cost.
-- Kestrel Electronics is fictional. Review content comes live from Brave at the time of each question.
+- Lionheart Electronics is fictional. Review content comes live from Brave at the time of each question.

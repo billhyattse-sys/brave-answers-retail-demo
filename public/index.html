@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kestrel Electronics · Shopping assistant demo</title>
+<title>Lionheart Electronics · Brave Answers API retail demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -98,6 +98,7 @@ button,input,textarea{font:inherit}
 .pc li::before{position:absolute;left:0;top:0;font-weight:800}
 .pros li::before{content:"+";color:var(--evergreen)}
 .cons li::before{content:"–";color:var(--sale)}
+.plain li::before{content:"•";color:var(--muted)}
 .cite{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin-left:3px;border-radius:5px;border:0;background:var(--mint-soft);color:var(--evergreen);font-size:12px;font-weight:700;cursor:pointer;vertical-align:1px}
 .verdict{margin:14px 0 0;padding:10px 12px;border-left:3px solid var(--mint);background:var(--surface);font-weight:600;font-size:15px}
 .note{font-size:14px;color:#7A4B00;background:#FFF1D6;border-radius:6px;padding:8px 10px;margin:0 0 10px}
@@ -153,9 +154,9 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
 <div class="promo"><b>Fall tech event</b> ends Sunday. Trade in your phone for extra credit. <a href="#">Shop deals</a></div>
 <header class="topbar">
   <div class="topbar-inner">
-    <a class="logo" href="#" aria-label="Kestrel Electronics home">
-      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#3FB58F"/><path d="M7 21 L15 8 L23 21 L15 16 Z" fill="#0A3935"/></svg>
-      Kestrel
+    <a class="logo" href="#" aria-label="Lionheart Electronics home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#3FB58F"/><path d="M10 7 H14 V19 H21 V23 H10 Z" fill="#0A3935"/></svg>
+      Lionheart
     </a>
     <form class="search" role="search" onsubmit="event.preventDefault()">
       <input type="search" aria-label="Search products" placeholder="Search phones, laptops, TVs…">
@@ -222,9 +223,9 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
     </article>
   </section>
 
-  <aside class="assistant" id="assistant" aria-label="Kestrel help">
+  <aside class="assistant" id="assistant" aria-label="Lionheart help">
     <div class="a-head">
-      <div><h2>Kestrel help</h2><p>Answers from current independent reviews</p></div>
+      <div><h2>Lionheart help</h2><p>Answers from current independent reviews</p></div>
       <div style="display:flex;gap:6px;align-items:center">
         <span class="mode" id="mode">Checking…</span>
         <button class="a-close" id="closeChat" aria-label="Close help">×</button>
@@ -245,7 +246,7 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
     </div>
     <div class="codebar" id="codebar" hidden>
       <label for="code">Access code</label>
-      <input id="code" type="password" autocomplete="off" placeholder="Needed for live answers">
+      <input id="code" type="password" autocomplete="off" placeholder="Enter the code, then ask below">
     </div>
     <form class="composer" id="composer">
       <textarea id="q" rows="1" aria-label="Your question" placeholder="Ask about this product…"></textarea>
@@ -253,7 +254,7 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
     </form>
     <div class="powered"><i></i>Answers powered by the Brave Search API</div>
   </aside>
-  <button class="launcher" id="openChat" hidden>💬 Ask Kestrel</button>
+  <button class="launcher" id="openChat" hidden>💬 Ask Lionheart</button>
 </main>
 
 <script>
@@ -311,7 +312,7 @@ function inline(text, t, known) {
 
 function renderProse(text, t, known) {
   const frag = [];
-  let list = null, kind = "pros";
+  let list = null, kind = "plain";
   const close = () => { list = null; };
   text.split(/\n+/).forEach(raw => {
     const line = raw.trim();
@@ -321,7 +322,8 @@ function renderProse(text, t, known) {
     if (head) {
       close();
       const h = head[1].replace(/:$/, "");
-      kind = /wait|con|against|downside/i.test(h) ? "cons" : "pros";
+      kind = /wait|cons?\b|against|downside|drawback|complaint|issue|problem/i.test(h) ? "cons"
+           : /upgrade|pros?\b|benefit|reasons to buy|advantage/i.test(h) ? "pros" : "plain";
       frag.push(el("div", { class: "pc " + kind }, el("h3", { text: h })));
     } else if (item) {
       if (!list) {
@@ -417,7 +419,7 @@ async function ask(text) {
       body: JSON.stringify({ question: text, code: $("#code").value }) });
     const d = await r.json();
     wait.remove();
-    if (!r.ok) showError(d.error || "The request failed.");
+    if (!r.ok) { showError(d.error || "The request failed."); if (r.status === 401) $("#code").focus(); }
     else renderAnswer(d);
   } catch (e) {
     wait.remove();
@@ -426,6 +428,11 @@ async function ask(text) {
   send.disabled = false; scrollDown(); q.focus();
 }
 
+$("#code").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  if (q.value.trim()) ask(q.value); else q.focus();
+});
 $("#composer").addEventListener("submit", e => { e.preventDefault(); ask(q.value); });
 q.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(q.value); } });
 document.querySelectorAll(".quick button").forEach(b => b.onclick = () => ask(b.dataset.q));
