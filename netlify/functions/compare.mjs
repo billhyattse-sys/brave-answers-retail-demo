@@ -92,7 +92,19 @@ async function webSearch(query, goggle) {
     url: r.url || "",
     site: r.meta_url?.hostname?.replace(/^www\./, "") || hostOf(r.url),
   }));
-  return { results, latency_ms: Date.now() - started };
+  return {
+    results,
+    latency_ms: Date.now() - started,
+    // Diagnostics: what Brave actually sent back
+    diagnostics: {
+      http_status: resp.status,
+      response_type: data.type || null,
+      top_level_keys: Object.keys(data),
+      web_results: data.web?.results?.length ?? null,
+      query_sent: data.query?.original ?? query,
+      query_altered: data.query?.altered ?? null,
+    },
+  };
 }
 
 export default async (req, context) => {

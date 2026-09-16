@@ -462,6 +462,9 @@ function renderCompare(d) {
     el("div", { class: "tally" },
       el("div", { text: removed.length ? `Removed by the Goggle: ${removed.join(", ")}` : "No discarded sites appeared for this question." }),
       el("div", { text: boostedTop.length ? `Trusted reviewers in the top 5: ${boostedTop.join(", ")}` : "No boosted sites reached the top 5 for this question." })),
+    (!d.standard.results.length && !d.goggled.results.length)
+      ? el("p", { class: "error", text: "Brave Web Search returned no results for this question, with or without the Goggle. Open \u201cUnder the hood\u201d below for what Brave sent back." })
+      : "",
     el("div", { class: "cmp-cols" },
       col("Standard", d.standard.results, site => matchesSite(site, sites.discard) ? "gone" : ""),
       col("With Goggle", d.goggled.results, site => matchesSite(site, sites.boost) ? "up" : "")),
@@ -471,7 +474,8 @@ function renderCompare(d) {
         el("dt", { text: "Endpoint" }), el("dd", { text: d.endpoint + " (2 calls)" }),
         el("dt", { text: "Goggle sent" }), el("dd", { text: d.goggle.source === "hosted" ? d.goggle.url : "inline rules" }),
         el("dt", { text: "Standard time" }), el("dd", { text: d.standard.latency_ms + " ms" }),
-        el("dt", { text: "Goggle time" }), el("dd", { text: d.goggled.latency_ms + " ms" }))));
+        el("dt", { text: "Goggle time" }), el("dd", { text: d.goggled.latency_ms + " ms" }),
+        el("dt", { text: "Brave sent back" }), el("dd", { text: JSON.stringify(d.standard.diagnostics || {}) }))));
   thread.append(card);
   return card;
 }
