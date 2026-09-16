@@ -124,6 +124,12 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
 .dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
 @keyframes b{0%,80%,100%{opacity:.3;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
 .composer{border-top:1px solid var(--line);padding:12px;display:flex;gap:8px;align-items:flex-end}
+.enginebar{display:flex;gap:8px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted);flex-wrap:wrap}
+.enginebar[hidden]{display:none}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:6px 10px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--evergreen);color:#fff}
+.engine-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--evergreen);background:var(--mint-soft);border-radius:4px;padding:1px 6px;margin-bottom:6px}
 .codebar{border-top:1px solid var(--line);padding:10px 12px 0;display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 .codebar[hidden]{display:none}
 .codebar input{flex:1;border:1px solid var(--line);border-radius:6px;padding:7px 10px;color:var(--ink)}
@@ -258,6 +264,13 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
         <button class="a-close" id="closeChat" aria-label="Close help">×</button>
       </div>
     </div>
+    <div class="enginebar" id="enginebar" hidden>
+      <span>Answer engine</span>
+      <div class="seg" role="group" aria-label="Answer engine">
+        <button type="button" data-engine="answers" aria-pressed="true">Brave Answers</button>
+        <button type="button" data-engine="llm" aria-pressed="false">LLM Context + Claude</button>
+      </div>
+    </div>
     <div class="thread" id="thread" aria-live="polite">
       <div class="empty" id="empty">
         <p class="greet">Hi, how can I help you?</p>
@@ -303,9 +316,19 @@ const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "a
 const scrollToTop = (node) => thread.scrollTo({ top: Math.max(0, node.offsetTop - 12), behavior: smooth() });
 
 let siteMode = "live";
+let engine = "answers";
+const ENGINES = {
+  answers: { path: "/api/ask", label: "Brave Answers", wait: "Brave is searching and writing an answer\u2026" },
+  llm: { path: "/api/llm-answer", label: "LLM Context + Claude", wait: "Brave is retrieving trusted sources; Claude is writing the answer\u2026" },
+};
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  engine = b.dataset.engine;
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+});
 fetch("/api/status").then(r => r.json()).then(s => {
   siteMode = s.mode;
   if (s.access_code_required) $("#codebar").hidden = false;
+  if (s.llm_available) $("#enginebar").hidden = false;
   const m = $("#mode");
   const labels = { live: "Live", replay: "Replay (recorded)", sample: "Sample data" };
   m.textContent = labels[s.mode] || s.mode;
@@ -379,6 +402,8 @@ function renderAnswer(d) {
   const box = el("div", { class: "msg-bot" });
   if (d.answer_note) box.append(el("p", { class: "note", text: d.answer_note }));
   const known = new Set((d.sources || []).map((s, i) => s.number ?? i + 1));
+  if (d.engine && d.mode === "live") box.append(el("div", { class: "engine-tag",
+    text: d.engine === "llm-context+claude" ? "LLM Context + Claude \u00b7 Goggles applied" : "Brave Answers" }));
   if (d.answer_text) box.append(...renderProse(d.answer_text, t, known));
   const a = d.answer;
   if (a) {
@@ -413,11 +438,11 @@ function renderAnswer(d) {
   }
   const b = d.brave || {};
   const u = b.usage || {};
-  const usageRows = Object.keys(u).length ? [
-    el("dt", { text: "Searches run" }), el("dd", { text: String(u["Queries"] ?? "–") }),
-    el("dt", { text: "Tokens in / out" }), el("dd", { text: `${u["Tokens-In"] ?? "–"} / ${u["Tokens-Out"] ?? "–"}` }),
-    el("dt", { text: "Cost of this answer" }), el("dd", { text: u["Total-Cost"] != null ? "$" + Number(u["Total-Cost"]).toFixed(4) : "–" }),
-  ] : [];
+  const usageRows = [];
+  if (u["Queries"] != null) usageRows.push(el("dt", { text: "Searches run" }), el("dd", { text: String(u["Queries"]) }));
+  if (u["Tokens-In"] != null) usageRows.push(el("dt", { text: "Tokens in / out" }), el("dd", { text: `${u["Tokens-In"]} / ${u["Tokens-Out"] ?? "\u2013"}` }));
+  if (u["Total-Cost"] != null) usageRows.push(el("dt", { text: "Cost of this answer" }), el("dd", { text: "$" + Number(u["Total-Cost"]).toFixed(4) }));
+  for (const [k, v] of Object.entries(b.extra || {})) usageRows.push(el("dt", { text: k }), el("dd", { text: String(v) }));
   const ep = (b.endpoint || "");
   box.append(el("details", { class: "hood" }, el("summary", { text: "Under the hood" }),
     el("dl", {},
@@ -472,6 +497,7 @@ function renderCompare(d) {
     el("details", { class: "hood" }, el("summary", { text: "Under the hood" }),
       el("dl", {},
         el("dt", { text: "Endpoint" }), el("dd", { text: d.endpoint + " (2 calls)" }),
+        el("dt", { text: "Search query" }), el("dd", { text: d.search_query || d.question }),
         el("dt", { text: "Goggle sent" }), el("dd", { text: d.goggle.source === "hosted" ? d.goggle.url : "inline rules" }),
         el("dt", { text: "Standard time" }), el("dd", { text: d.standard.latency_ms + " ms" }),
         el("dt", { text: "Goggle time" }), el("dd", { text: d.goggled.latency_ms + " ms" }),
@@ -520,7 +546,7 @@ async function ask(text) {
   const userMsg = el("div", { class: "msg-user", text });
   thread.append(userMsg);
   q.value = ""; send.disabled = true;
-  const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), "Brave is searching and writing an answer…");
+  const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), ENGINES[engine].wait);
   thread.append(wait); scrollDown();
   const showError = (msg) => {
     const box = el("div", { class: "error", text: msg });
@@ -532,7 +558,7 @@ async function ask(text) {
   };
   try {
     if (siteMode === "replay") { wait.remove(); await showRecorded(); send.disabled = false; return; }
-    const r = await fetch("/api/ask", { method: "POST", headers: { "Content-Type": "application/json" },
+    const r = await fetch(ENGINES[engine].path, { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question: text, code: $("#code").value }) });
     const d = await r.json();
     wait.remove();

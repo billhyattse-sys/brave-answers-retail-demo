@@ -152,6 +152,7 @@ export default async (req, context) => {
       engine: "brave",
       brave_key: Boolean(braveKey()),
       access_code_required: Boolean(accessCode),
+      llm_available: Boolean((env("BRAVE_SEARCH_API_KEY") || braveKey()) && env("ANTHROPIC_API_KEY")),
     });
   }
   if (req.method !== "POST") return json(405, { error: "Use POST." });
