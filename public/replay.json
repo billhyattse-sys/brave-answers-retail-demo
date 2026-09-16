@@ -1,132 +1,216 @@
 {
   "mode": "live",
   "engine": "brave-answers",
-  "question": "Does the iPhone have any known issues?",
+  "question": "I have an iPhone 16. Should I upgrade to the iPhone 18? Give me some pros and cons.",
   "answer": null,
-  "answer_text": "Recent customer reports highlight **frequent battery issues**, including swelling and rapid degradation, alongside **overheating** and **Wi-Fi connectivity drops** on newer models like the iPhone 16.[1][2]\n\n*   **Battery & Heat**: Multiple users report batteries bulging, overheating to the point of safety hazards, and refusing to charge or hold a charge.[3][4][5]\n*   **Connectivity**: Persistent Wi-Fi disconnections, \"No Internet\" errors, and cellular signal failures are common complaints across various models.\n*   **Software Glitches**: Users experience autocorrect errors, Face ID failures, screen bleeding, and random freezing or rebooting.[6][7]\n*   **Support & Cost**: Apple is frequently criticized for poor customer service, high repair costs, and denying warranty replacements for known defects.[8][9][10][11][12]\n*   **Hardware Limitations**: The lack of expandable storage, dual-SIM support (on some regions/models), and fragile glass construction remain persistent drawbacks.[13]\n\nBottom line: While the ecosystem is seamless, shoppers should be aware of significant risks regarding **battery safety**, **software instability**, and **expensive, difficult warranty claims**.[14]",
+  "answer_text": "The **iPhone 18 Pro** offers significant upgrades in battery life, camera capabilities, and performance over the iPhone 16, but comes with a higher price and weight increase.[1][2] Whether it is worth the jump depends on your tolerance for the extra cost versus your need for the new features.[3][4][5]\n\n### Reasons to upgrade\n*   **Battery Life:** The iPhone 18 Pro provides up to **36 hours** of video playback, a major improvement over the iPhone 16\u2019s 27 hours, with the Pro Max reaching 45 hours.[6][7][8]\n*   **Camera System:** The new **variable-aperture 48MP main camera** allows manual control, while the telephoto lens upgrades to 48MP with 4x and 8x optical-quality zoom options.[9][10]\n*   **Performance:** The **A20 Pro chip** uses a 2nm process with a dual 16-core Neural Engine, offering faster processing and better efficiency for demanding tasks and Apple Intelligence.[11][12]\n*   **Display and Build:** It features a brighter **3,000-nit display** with an anti-reflective coating and a more durable **aluminum unibody** with Ceramic Shield 2.[13]\n\n### Reasons to wait\n*   **Cost:** The iPhone 18 Pro starts at **$1,199**, which is $200 more than the iPhone 16 Pro\u2019s launch price, making the upgrade expensive.[14][15][16][17]\n*   **Weight and Size:** The iPhone 18 Pro is heavier at **211 grams** compared to the 199-gram iPhone 16, which may affect comfort and pocketability.[18][19]\n*   **Diminishing Returns:** If your current iPhone 16 still functions well, the daily usability improvements may not justify the significant financial investment.[20][21]\n*   **Feature Parity:** Many new software features, including Apple Intelligence, are already available on the iPhone 16, reducing the need to upgrade for software alone.[22]\n\nBottom line: Upgrade if you prioritize battery life and camera enhancements, but wait if your current device meets your daily needs and budget is a concern.[23][24][25][26]",
   "answer_note": null,
   "sources": [
     {
       "number": 1,
-      "title": "consumeraffairs.com",
-      "url": "https://www.consumeraffairs.com/computers/apple_iphone.html?page=2",
-      "description": "Thanks for your vote! Report\n\nGirish Lehi, UT\n\nVerified purchase\n\nCustomer Service Coverage Price Punctuality & Speed Maintenance Staff\n\nReviewed March 27, 2025\n\nShort version: iPhone 16 is a very bad device with battery bulging issue, phon",
-      "site": "consumeraffairs.com"
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "## Key facts: iPhone 16 Pro against iPhone 18 Pro\nSpec | iPhone 16 Pro (2024) | iPhone 18 Pro (2026) |\n| --- | --- | --- |\n| Chip | A18 Pro, 6-core CPU, 6-core GPU, 16-core Neural Engine | A20 Pro, 2nm, 6-core CPU, 7-core GPU, dual 16-core ",
+      "site": "macobserver.com"
     },
     {
       "number": 2,
-      "title": "trustpilot.com",
-      "url": "https://www.trustpilot.com/review/iphone.com",
-      "description": "# Apple\u00a0Reviews\nReview summary\nCreated with AI, based on recent reviews\n\nLooking at 45 reviews, most reviewers were let down by their experience overall. Many people found the devices to be slow and inefficient, experiencing severe battery ",
-      "site": "trustpilot.com"
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/should-you-upgrade-to-iphone-18-pro-from-iphone-15-pro-16-pro-17-pro/",
+      "description": "## iPhone 16 Pro and iPhone 15 Pro owners: the case is stronger\nThose models use older A-series chips and fixed-aperture cameras, so the iPhone 18 Pro brings a multi-generation jump in processing and the first variabl\u2026",
+      "site": "macobserver.com"
     },
     {
       "number": 3,
-      "title": "consumeraffairs.com",
-      "url": "https://www.consumeraffairs.com/computers/apple_iphone.html?page=2",
-      "description": "Thanks for your vote! Report\n\nGirish Lehi, UT\n\nVerified purchase\n\nCustomer Service Coverage Price Punctuality & Speed Maintenance Staff\n\nReviewed March 27, 2025\n\nShort version: iPhone 16 is a very bad device with battery bulging issue, phon",
-      "site": "consumeraffairs.com"
+      "title": "reddit.com",
+      "url": "https://www.reddit.com/r/AppleWhatShouldIBuy/comments/1vsivfq/iphone_16_pro_max_iphone_18_pro_max_worth_the/",
+      "description": "## Suspicious_Ant4648\nIt\u2019s perfectly fine. Upgrades are marginal. Don\u2019t get sucked into the hype. If u want to spend the money do it because I have it not because you\u2019ll think it\u2019s a big jump\u2026",
+      "site": "reddit.com"
     },
     {
       "number": 4,
-      "title": "consumeraffairs.com",
-      "url": "https://www.consumeraffairs.com/computers/apple_iphone.html?page=4",
-      "description": "Thanks for your vote! Report\n\nBb Other, Other\n\nCustomer Service Staff\n\nReviewed May 6, 2019\n\nApple phone batteries are the worst performance and battery will dry soon and also battery started bulging and damaged the skin by using Apple pho\u2026",
-      "site": "consumeraffairs.com"
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "## Who should keep the iPhone 16 Pro\nStay put if you charge overnight, rarely finish a day under 30 percent, shoot mostly at 1x and 2x, and your glass and battery are still good. None of the three rea\u2026",
+      "site": "macobserver.com"
     },
     {
       "number": 5,
-      "title": "trustpilot.com",
-      "url": "https://www.trustpilot.com/review/iphone.com",
-      "description": "# Apple\u00a0Reviews\n\u2026## Review summary\nCreated with AI, based on recent reviews\n\nLooking at 45 reviews, most reviewers were let down by their experience overall. Many people found the devices to be slow and inefficient, experiencing severe batt",
-      "site": "trustpilot.com"
+      "title": "reddit.com",
+      "url": "https://www.reddit.com/r/iPhone16/comments/1spp49k/whos_upgrading_from_iphone_16_to_18_pro/",
+      "description": "## Shem68\nNot worth it. I\u2019m rocking a 14 Pro Max and I don\u2019t feel the need to upgrade at all. Nothing new making it worthwhile. Will probably be keeping it an additional 3 to 4 years at t\u2026",
+      "site": "reddit.com"
     },
     {
       "number": 6,
-      "title": "trustpilot.com",
-      "url": "https://www.trustpilot.com/review/iphone.com",
-      "description": "# Apple\u00a0Reviews\n## Review summary\n\u2026reviews\n\nLooking at 45 reviews, most reviewers were let down by their experience overall. Many people found the devices to be slow and inefficient, experiencing severe battery drain and unexpected overheat",
-      "site": "trustpilot.com"
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "## Key facts: iPhone 16 Pro against iPhone 18 Pro\n| Spec | iPhone 16 Pro (2024) | iPhone 18 Pro (2026) |\n| --- | --- | --- |\n| Chip | A18 Pro, 6-core CPU, 6-core GPU, 16-core Neural Engine | A20 Pro, 2nm, 6-cor\u2026",
+      "site": "macobserver.com"
     },
     {
       "number": 7,
-      "title": "consumeraffairs.com",
-      "url": "https://www.consumeraffairs.com/computers/apple_iphone.html?page=2",
-      "description": "The software, however, needs work. This is specific to the autocorrect feature. It has stopped only changing the word you are working on and had started grabbing entire chunks of text and randomly changing them. The results are overt errors",
-      "site": "consumeraffairs.com"
+      "title": "cnn.com",
+      "url": "https://www.cnn.com/cnn-underscored/electronics/should-you-upgrade-to-iphone-18-pro",
+      "description": "There\u2019s also significant gains for the 18 Pro when compared with Pros of the past, as it\u2019s rated for up to 36 hours of video playback. That\u2019s a big leap over the iPhone 15 Pro that promise\u2026",
+      "site": "cnn.com"
     },
     {
       "number": 8,
-      "title": "consumeraffairs.com",
-      "url": "https://www.consumeraffairs.com/computers/apple_iphone.html?page=2",
-      "description": "# Apple iPhone Reviews\n## About Apple iPhone\n\u2026iPhone has been updated with each generation, integrating new features and improving user experience.\n\nPros\n\n- User-friendly interface\n- High-quality camera performance\n- Seamless integration wi",
-      "site": "consumeraffairs.com"
+      "title": "macrumors.com",
+      "url": "https://www.macrumors.com/guide/iphone-16-pro-vs-18-pro/",
+      "description": "### Battery and Charging\n\u2026batteryiPhone 18 Pro Max: 5,391 mAh battery |\n| iPhone 16 Pro: Up to 27 hours of video playbackiPhone 16 Pro Max: Up to 33 hours of video playback | iPhone 18 Pro: Up to 36 hours of video playbackiPhone 18\u2026",
+      "site": "macrumors.com"
     },
     {
       "number": 9,
-      "title": "consumeraffairs.com",
-      "url": "https://www.consumeraffairs.com/computers/apple_iphone.html",
-      "description": "# Apple iPhone Reviews\n## About Apple iPhone\nPros\n\n- User-friendly interface\n- High-quality camera performance\n- Seamless integration with Apple ecosystem\n\nCons\n\n- Frequent battery issues\n- Poor customer service experiences\n- High repair co",
-      "site": "consumeraffairs.com"
+      "title": "macrumors.com",
+      "url": "https://www.macrumors.com/guide/iphone-16-pro-vs-18-pro/",
+      "description": "### Rear Camera\n\u2026--- | --- |\n| 12-megapixel Telephoto camera | 48-megapixel Fusion Telephoto camera |\n| 0.5x, 1x, 2x, and 5x optical zoom options | 0.5x, 1x, 2x, 4x, and 8x optical zoom options |\n| Fixed \u0192/1.78 aperture on the 48-megapixel ",
+      "site": "macrumors.com"
     },
     {
       "number": 10,
-      "title": "consumeraffairs.com",
-      "url": "https://www.consumeraffairs.com/computers/apple_iphone.html?page=4",
-      "description": "Apple has been making crappy products lately and their repair service sucks!! My brand new iPhone 11 went down for no reason for the second time. They told us to send it in for repair. It took 2 and a\u2026",
-      "site": "consumeraffairs.com"
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "## Key facts: iPhone 16 Pro against iPhone 18 Pro\n\u202648MP Fusion, 24 mm, variable f/1.48, f/1.8, f/2.8, f/4.0 |\n| Telephoto | 12MP 5x, 120 mm, f/2.8 | 48MP 4x, 100 mm, f/2.8, plus 12MP optical-quality 8x at 200 mm |\n| Front c\u2026",
+      "site": "macobserver.com"
     },
     {
       "number": 11,
-      "title": "trustpilot.com",
-      "url": "https://www.trustpilot.com/review/iphone.com",
-      "description": "# Apple\u00a0Reviews\n## Review summary\nCreated with AI, based on recent reviews\n\nLooking at 45 reviews, most reviewers were let down by their experience overall. Many people found the devices to be slow and inefficient, experiencing severe batte",
-      "site": "trustpilot.com"
+      "title": "macrumors.com",
+      "url": "https://www.macrumors.com/guide/iphone-16-pro-vs-18-pro/",
+      "description": "Performance is the other argument for upgrading, particularly if you have noticed your \u200ciPhone 16\u200c Pro throttling. The A20 Pro moves to a 2nm process, gains a seventh GPU core with Neural Accelerators, and doubles the Neural Engine to 3\u2026",
+      "site": "macrumors.com"
     },
     {
       "number": 12,
-      "title": "quora.com",
-      "url": "https://www.quora.com/What-are-the-main-problems-of-iPhone",
-      "description": "- Symptoms: difficult out-of-warranty repairs; proprietary parts; battery capacity degrades over time; some repairs require Apple authorization.\n- Who\u2019s affected: users who keep phones 3+ years or live in areas with limited Apple service.\n-",
-      "site": "quora.com"
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "\u2026## Key facts: iPhone 16 Pro against iPhone 18 Pro\n| Spec | iPhone 16 Pro (2024) | iPhone 18 Pro (2026) |\n| --- | --- | --- |\n| Chip | A18 Pro, 6-core CPU, 6-core GPU, 16-core Neural Engine | A20 Pro, 2nm, 6-core CPU, 7-c\u2026",
+      "site": "macobserver.com"
     },
     {
       "number": 13,
-      "title": "quora.com",
-      "url": "https://www.quora.com/What-are-the-main-problems-of-iPhone",
-      "description": "Less Battery Life.\n2. Less RAM.\n3. Very Less control.\n4. Negligible Customisation.\n5. Poor Screen.\n6. OK speakers.\n7. No headphone jack.(LOL)\n8. NO Bluetooth transfer allowed\n9. No expandable storage.\n10. Single Sim.\n11.",
-      "site": "quora.com"
+      "title": "macrumors.com",
+      "url": "https://www.macrumors.com/guide/iphone-16-pro-vs-18-pro/",
+      "description": "### Design and Display\nFull-width rounded rectangle aluminum camera plateau |\n| Ceramic Shield front | Ceramic Shield 2 front with 3x better scratch resistance |\n| Fingerprint-resistant oleophobic coating only | Apple-designed anti-reflecti",
+      "site": "macrumors.com"
     },
     {
       "number": 14,
-      "title": "quora.com",
-      "url": "https://www.quora.com/What-are-the-main-problems-of-iPhone",
-      "description": "- Symptoms: difficult out-of-warranty repairs; proprietary parts; battery capacity degrades over time; some repairs require Apple authorization.\n- Who\u2019s affected: users who keep phones 3+ years or live in areas with limited Apple service.\n-",
-      "site": "quora.com"
+      "title": "macrumors.com",
+      "url": "https://www.macrumors.com/guide/iphone-16-pro-vs-18-pro/",
+      "description": "The \u200ciPhone 18 Pro\u200c starts at $1,199 for 256GB, $200 more than the \u200ciPhone 16\u200c Pro's $999 launch price, although the entry storage tier has doubled from 128GB. Apple no longer sells the \u200ciPhone 16\u200c Pro directly\u2026",
+      "site": "macrumors.com"
+    },
+    {
+      "number": 15,
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "## Key facts: iPhone 16 Pro against iPhone 18 Pro\n| Spec | iPhone 16 Pro (2024) | iPhone 18 Pro (2026) |\n| --- | --- | --- |\n| Chip | A18 Pro, 6-core CPU, 6-core GPU, 16-core Neural Engine | A20 Pro, 2nm, 6-cor\u2026",
+      "site": "macobserver.com"
+    },
+    {
+      "number": 16,
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/should-you-upgrade-to-iphone-18-pro-from-iphone-15-pro-16-pro-17-pro/",
+      "description": "# Should You Upgrade to iPhone 18 Pro? An Honest Answer for iPhone 15 Pro, 16 Pro and 17 Pro Owners\nThe iPhone 18 Pro starts at $1,199 and the iPhone 18 Pro Max at $1,299, $100 more\u2026",
+      "site": "macobserver.com"
+    },
+    {
+      "number": 17,
+      "title": "medium.com",
+      "url": "https://medium.com/codetodeploy/do-iphone-16-and-iphone-17-owners-need-to-upgrade-to-iphone-18-53fab6944cfb",
+      "description": "Those are not the same upgrade decision. The iPhone 18 Pro starts at US$1,199 and iPhone 18 Pro Max at US$1,299. iPhone Duo starts at US$1,999. Treating Duo as the default successor to a normal iPhone make\u2026",
+      "site": "medium.com"
+    },
+    {
+      "number": 18,
+      "title": "macrumors.com",
+      "url": "https://www.macrumors.com/guide/iphone-16-pro-vs-18-pro/",
+      "description": "### Design and Display\n\u2026up to two simultaneous Live Activities | Smaller \u200cDynamic Island\u200c, supports up to three simultaneous Live Activities |\n| iPhone 16 Pro: Weighs 7.03 ounces (199 grams)iPhone 16 Pro Max: Weighs 7.99 ounces (227 grams) ",
+      "site": "macrumors.com"
+    },
+    {
+      "number": 19,
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "## Key facts: iPhone 16 Pro against iPhone 18 Pro\n\u202618MP Center Stage, f/1.9 |\n| Battery, video playback | Up to 27 hours | Up to 36 hours |\n| Fast charge | 50 percent in about 30 minutes | 50 percent in about 15 minutes, 60W adapter |\n| Wei",
+      "site": "macobserver.com"
+    },
+    {
+      "number": 20,
+      "title": "macrumors.com",
+      "url": "https://www.macrumors.com/guide/iphone-16-pro-vs-18-pro/",
+      "description": "## Top Rated Comments\nThere are a lot of tech geek improvements on the spec sheet, but nothing that really affects my day to day usage enough to make me want to upgrade from the 16 Pro this year.\nS",
+      "site": "macrumors.com"
+    },
+    {
+      "number": 21,
+      "title": "reddit.com",
+      "url": "https://www.reddit.com/r/AppleWhatShouldIBuy/comments/1vsivfq/iphone_16_pro_max_iphone_18_pro_max_worth_the/",
+      "description": "Just pick up a 16 pro max and it will last you till 20 for sure, not much more they can keep doing to make the next phone a \u201cgiant\u201d leap from the last model so not really worth it\u2026",
+      "site": "reddit.com"
+    },
+    {
+      "number": 22,
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "It is closer than the spec sheet suggests, because nothing in this year\u2019s software is gated behind the new phone. Apple\u2019s iOS 27 page lists full Apple Intelligence support on iPhone 16 and later, and iOS 27 arrives\u2026",
+      "site": "macobserver.com"
+    },
+    {
+      "number": 23,
+      "title": "cnn.com",
+      "url": "https://www.cnn.com/cnn-underscored/electronics/should-you-upgrade-to-iphone-18-pro",
+      "description": "## The takeaway\n\u2026beyond any novel colors and finishes, because we all know most phone cases will hide both of those. Instead, think about the flaws and pros of your current iPhone. Battery hogs should get the iPhone 18 Pro Max, while came\u2026",
+      "site": "cnn.com"
+    },
+    {
+      "number": 24,
+      "title": "reddit.com",
+      "url": "https://www.reddit.com/r/AppleWhatShouldIBuy/comments/1vsivfq/iphone_16_pro_max_iphone_18_pro_max_worth_the/",
+      "description": "Just pick up a 16 pro max and it will last you till 20 for sure, not much more they can keep doing to make the next phone a \u201cgiant\u201d leap from the last model so not really worth it\u2026",
+      "site": "reddit.com"
+    },
+    {
+      "number": 25,
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/iphone-16-pro-to-iphone-18-pro-upgrade-worth-it/",
+      "description": "## Who should keep the iPhone 16 Pro\nStay put if you charge overnight, rarely finish a day under 30 percent, shoot mostly at 1x and 2x, and your glass and battery are still good. None of the three rea\u2026",
+      "site": "macobserver.com"
+    },
+    {
+      "number": 26,
+      "title": "macobserver.com",
+      "url": "https://www.macobserver.com/tips/round-ups/should-you-upgrade-to-iphone-18-pro-from-iphone-15-pro-16-pro-17-pro/",
+      "description": "Owners\nThe iPhone 18 Pro starts at $1,199 and the iPhone 18 Pro Max at $1,299, $100 more than last year\u2019s models, and both bring the A20 Pro chip, a variable aperture main camera and longer battery lif\u2026",
+      "site": "macobserver.com"
     }
   ],
   "brave": {
     "endpoint": "POST /res/v1/chat/completions",
-    "query": "Does the iPhone have any known issues?",
+    "query": "I have an iPhone 16. Should I upgrade to the iPhone 18? Give me some pros and cons.",
     "params": {
       "model": "brave",
       "stream": true,
       "enable_citations": true,
       "country": "us"
     },
-    "latency_ms": 2443,
-    "result_count": 14,
+    "latency_ms": 4400,
+    "result_count": 26,
     "usage": {
       "Requests": 1,
       "Queries": 1,
-      "Tokens-In": 9242,
-      "Tokens-Out": 227,
+      "Tokens-In": 9270,
+      "Tokens-Out": 444,
       "Requests-Cost": 0.0,
       "Queries-Cost": 0.004,
-      "Tokens-In-Cost": 0.04621,
-      "Tokens-Out-Cost": 0.0011350000000000002,
-      "Total-Cost": 0.051345
+      "Tokens-In-Cost": 0.04635,
+      "Tokens-Out-Cost": 0.00222,
+      "Total-Cost": 0.052570000000000006
     }
   },
-  "total_ms": 2444
+  "total_ms": 4402
 }
