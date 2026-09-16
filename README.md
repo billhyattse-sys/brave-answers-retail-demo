@@ -1,4 +1,4 @@
-# Brave Answers Retail Assistant
+# Brave Search Retail Assistant
 
 A sample app that shows how a retailer can answer shoppers' buying questions with **current, cited web information** using the [Brave Search API](https://api-dashboard.search.brave.com/). A fictional store, Lionheart Electronics, adds a help widget to its product page. A shopper asks, "Should I upgrade from my iPhone 16?" and gets pros, cons, and a bottom line, with every claim linked to its source.
 

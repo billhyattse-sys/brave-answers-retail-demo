@@ -1,8 +1,8 @@
 ! name: Trusted Phone Reviews
-! description: Established review publications first; forums and complaint sites removed. Built for the Brave Answers retail demo.
+! description: Established review publications first; forums and complaint sites removed. Built for the Brave Search retail demo.
 ! public: true
 ! author: Bill Hyatt
-! homepage: https://github.com/billhyattse-sys/brave-answers-retail-demo
+! homepage: https://github.com/billhyattse-sys/brave-search-retail-demo
 
 ! Remove forums and complaint aggregators
 $discard,site=quora.com
