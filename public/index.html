@@ -109,6 +109,8 @@ button,input,textarea{font:inherit}
 .src span{color:var(--muted)}
 .src .snip{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .src .n{font-weight:700;color:var(--evergreen)}
+.src[hidden]{display:none}
+.more-src{border:0;background:none;color:var(--evergreen);font-weight:700;cursor:pointer;padding:4px 0;text-align:left;text-decoration:underline}
 .src.flash{background:var(--mint-soft);border-color:var(--mint)}
 details.hood{margin-top:12px;font-size:13px;border-top:1px dashed var(--line);padding-top:10px}
 details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
@@ -272,6 +274,8 @@ function el(tag, attrs = {}, ...kids) {
 }
 const safeUrl = u => /^https?:\/\//i.test(u || "") ? u : "#";
 const scrollDown = () => thread.scrollTop = thread.scrollHeight;
+const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+const scrollToTop = (node) => thread.scrollTo({ top: Math.max(0, node.offsetTop - 12), behavior: smooth() });
 
 let siteMode = "live";
 fetch("/api/status").then(r => r.json()).then(s => {
@@ -290,7 +294,8 @@ function citeButtons(ids, t) {
     b.onclick = () => {
       const card = document.getElementById(`src-${t}-${n}`);
       if (!card) return;
-      thread.scrollTo({ top: card.offsetTop - 60, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      if (card.hidden) card.closest(".sources").querySelector(".more-src")?.click();
+      thread.scrollTo({ top: card.offsetTop - 60, behavior: smooth() });
       card.classList.add("flash"); setTimeout(() => card.classList.remove("flash"), 1400);
     };
     return b;
@@ -360,10 +365,26 @@ function renderAnswer(d) {
     if (a.verdict) box.append(el("p", { class: "verdict", text: a.verdict }));
   }
   if (d.sources && d.sources.length) {
-    box.append(el("div", { class: "sources" }, el("h3", { text: "Sources" }),
-      d.sources.map((s, i) => el("a", { class: "src", id: `src-${t}-${s.number ?? i + 1}`, href: safeUrl(s.url), target: "_blank", rel: "noopener" },
+    const SHOW = 3;
+    const cards = d.sources.map((s, i) => {
+      const a = el("a", { class: "src", id: `src-${t}-${s.number ?? i + 1}`, href: safeUrl(s.url), target: "_blank", rel: "noopener" },
         el("span", { class: "n", text: s.number ?? i + 1 }),
-        el("div", {}, el("b", { text: s.title }), el("span", { class: "snip", text: (s.title === s.site && s.description) ? s.description : (s.site || s.url) }))))));
+        el("div", {}, el("b", { text: s.title }), el("span", { class: "snip", text: (s.title === s.site && s.description) ? s.description : (s.site || s.url) })));
+      if (i >= SHOW) a.hidden = true;
+      return a;
+    });
+    const wrap = el("div", { class: "sources" }, el("h3", { text: `Sources (${cards.length})` }), cards);
+    if (cards.length > SHOW) {
+      const more = el("button", { class: "more-src", type: "button", "aria-expanded": "false", text: `Show all ${cards.length} sources` });
+      more.onclick = () => {
+        const open = more.getAttribute("aria-expanded") === "true";
+        cards.slice(SHOW).forEach(c => c.hidden = open);
+        more.setAttribute("aria-expanded", String(!open));
+        more.textContent = open ? `Show all ${cards.length} sources` : "Show fewer sources";
+      };
+      wrap.append(more);
+    }
+    box.append(wrap);
   }
   const b = d.brave || {};
   const u = b.usage || {};
@@ -384,6 +405,7 @@ function renderAnswer(d) {
       el("dt", { text: "Total time" }), el("dd", { text: (d.total_ms ?? "–") + " ms" }),
       ...usageRows)));
   thread.append(box);
+  return box;
 }
 
 async function showRecorded() {
@@ -391,18 +413,19 @@ async function showRecorded() {
     const r = await fetch("/replay.json", { cache: "no-store" });
     const d = await r.json();
     d.mode = "replay";
-    renderAnswer(d);
+    scrollToTop(renderAnswer(d));
   } catch (e) {
     thread.append(el("div", { class: "error", text: "The recorded answer isn't available." }));
+    scrollDown();
   }
-  scrollDown();
 }
 
 async function ask(text) {
   text = text.trim();
   if (!text) return;
   $("#empty")?.remove();
-  thread.append(el("div", { class: "msg-user", text }));
+  const userMsg = el("div", { class: "msg-user", text });
+  thread.append(userMsg);
   q.value = ""; send.disabled = true;
   const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), "Brave is searching and writing an answer…");
   thread.append(wait); scrollDown();
@@ -412,6 +435,7 @@ async function ask(text) {
     btn.onclick = () => { btn.remove(); showRecorded(); };
     box.append(el("div", {}, btn));
     thread.append(box);
+    scrollDown();
   };
   try {
     if (siteMode === "replay") { wait.remove(); await showRecorded(); send.disabled = false; return; }
@@ -420,12 +444,12 @@ async function ask(text) {
     const d = await r.json();
     wait.remove();
     if (!r.ok) { showError(d.error || "The request failed."); if (r.status === 401) $("#code").focus(); }
-    else renderAnswer(d);
+    else { renderAnswer(d); scrollToTop(userMsg); }
   } catch (e) {
     wait.remove();
     showError("Can't reach the demo server right now.");
   }
-  send.disabled = false; scrollDown(); q.focus();
+  send.disabled = false; q.focus({ preventScroll: true });
 }
 
 $("#code").addEventListener("keydown", e => {
