@@ -142,6 +142,7 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
 
 
 /* Goggles comparison */
+.roi-link{display:inline-block;margin-top:8px;font-weight:700;font-size:13px}
 .compare-btn{margin-top:12px;border:1.5px solid var(--evergreen);background:#fff;color:var(--evergreen);border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 .compare-btn:disabled{opacity:.55;cursor:default}
 .cmp{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff}
@@ -195,7 +196,7 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
       <input type="search" aria-label="Search products" placeholder="Search phones, laptops, TVs…">
       <button type="submit">Search</button>
     </form>
-    <div class="util"><span>Store: Northgate</span><span>Account</span><span>Cart (0)</span></div>
+    <div class="util"><a href="/roi.html" style="color:#fff;font-weight:700">ROI calculator</a><span>Store: Northgate</span><span>Cart (0)</span></div>
   </div>
   <nav class="catnav" aria-label="Departments">
     <ul><li>Deals</li><li class="on">Cell phones</li><li>Computers</li><li>TV &amp; home theater</li><li>Audio</li><li>Smart home</li><li>Gaming</li></ul>
@@ -443,6 +444,11 @@ function renderAnswer(d) {
   if (u["Tokens-In"] != null) usageRows.push(el("dt", { text: "Tokens in / out" }), el("dd", { text: `${u["Tokens-In"]} / ${u["Tokens-Out"] ?? "\u2013"}` }));
   if (u["Total-Cost"] != null) usageRows.push(el("dt", { text: "Cost of this answer" }), el("dd", { text: "$" + Number(u["Total-Cost"]).toFixed(4) }));
   for (const [k, v] of Object.entries(b.extra || {})) usageRows.push(el("dt", { text: k }), el("dd", { text: String(v) }));
+  const answerCost = u["Total-Cost"] != null ? Number(u["Total-Cost"]) : b.estimated_cost;
+  const roiLink = answerCost != null && Number.isFinite(answerCost)
+    ? el("a", { class: "roi-link", href: `/roi.html?cost=${answerCost.toFixed(4)}&engine=${d.engine === "llm-context+claude" ? "llm" : "answers"}`,
+        target: "_blank", rel: "noopener", text: "Model this cost in the ROI calculator \u2192" })
+    : null;
   const ep = (b.endpoint || "");
   box.append(el("details", { class: "hood" }, el("summary", { text: "Under the hood" }),
     el("dl", {},
@@ -453,7 +459,7 @@ function renderAnswer(d) {
       el("dt", { text: "Results" }), el("dd", { text: String(b.result_count ?? "") }),
       el("dt", { text: "Brave time" }), el("dd", { text: (b.latency_ms ?? "–") + " ms" }),
       el("dt", { text: "Total time" }), el("dd", { text: (d.total_ms ?? "–") + " ms" }),
-      ...usageRows)));
+      ...usageRows), roiLink));
   if (d.question) {
     const btn = el("button", { class: "compare-btn", type: "button", text: "Compare sources with Goggles" });
     btn.onclick = () => compareSources(d.question, btn);

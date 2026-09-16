@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROI calculator · Lionheart Electronics · Brave Search API retail demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --evergreen:#0D4A45; --evergreen-2:#0A3935; --mint:#3FB58F; --mint-soft:#E3F4EE;
+  --surface:#F3F6F5; --card:#FFFFFF; --ink:#17201F; --muted:#5B6866; --line:#D9E1DF;
+  --sale:#B3261E; --brave:#FB542B;
+  --font:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--font);color:var(--ink);background:var(--surface);font-size:16px;line-height:1.5}
+a{color:var(--evergreen)}
+:focus-visible{outline:3px solid var(--mint);outline-offset:2px}
+.topbar{background:var(--evergreen);color:#fff}
+.topbar-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:22px;color:#fff;text-decoration:none}
+.topbar a.back{color:#fff;font-weight:600;font-size:14px}
+main{max-width:1180px;margin:0 auto;padding:28px 24px 60px}
+.kicker{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brave);margin:0 0 6px}
+h1{font-size:40px;line-height:1.08;letter-spacing:-.03em;margin:0 0 10px;color:var(--evergreen)}
+.lede{font-size:18px;color:var(--muted);max-width:62ch;margin:0 0 26px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
+.panel h2{font-size:17px;margin:0 0 4px}
+.panel .hint{font-size:13px;color:var(--muted);margin:0 0 14px}
+fieldset{border:0;padding:0;margin:0 0 22px}
+fieldset:last-child{margin-bottom:0}
+legend{font-weight:700;font-size:15px;margin-bottom:10px;color:var(--evergreen)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:4px}
+.field small{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+.inp span{padding:0 10px;color:var(--muted);font-size:14px;background:var(--surface);align-self:stretch;display:flex;align-items:center}
+.inp input{border:0;padding:9px 10px;font:inherit;width:100%;min-width:0;color:var(--ink)}
+.engines{display:grid;gap:8px;margin-bottom:12px}
+.engine{display:flex;gap:10px;align-items:flex-start;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.engine:has(input:checked){border-color:var(--evergreen);background:var(--mint-soft)}
+.engine input{margin-top:4px}
+.engine b{display:block}
+.engine em{font-style:normal;font-size:13px;color:var(--muted);font-weight:400}
+.results{position:sticky;top:16px}
+.headline{background:var(--evergreen);color:#fff;border-radius:12px;padding:22px;margin-bottom:16px}
+.headline .big{font-size:46px;font-weight:800;line-height:1;letter-spacing:-.03em}
+.headline p{margin:8px 0 0;color:#D7F0E6}
+.stats{display:grid;gap:0}
+.row{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.row:last-child{border-bottom:0}
+.row b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.row.total{font-size:17px;padding-top:12px}
+.row.total b{color:var(--evergreen)}
+.neg{color:var(--sale)}
+.callout{margin-top:14px;background:var(--mint-soft);border-radius:8px;padding:12px 14px;font-size:14px}
+.note{margin-top:22px;font-size:13px;color:var(--muted)}
+.note li{margin-bottom:4px}
+@media (max-width:960px){.layout{grid-template-columns:1fr}.results{position:static}}
+@media (max-width:560px){.grid{grid-template-columns:1fr}h1{font-size:30px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="logo" href="/" aria-label="Lionheart Electronics home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="7" fill="#3FB58F"/><path d="M10 7 H14 V19 H21 V23 H10 Z" fill="#0A3935"/></svg>
+      Lionheart
+    </a>
+    <a class="back" href="/">← Back to the store</a>
+  </div>
+</header>
+
+<main>
+  <p class="kicker">Business value</p>
+  <h1>What is a grounded answer worth?</h1>
+  <p class="lede">Every answer the assistant gives has a small, measurable cost. Weigh it against the value of one kept sale, one avoided return, or one support contact that never happens.</p>
+
+  <div class="layout">
+    <form class="panel" id="form" onsubmit="return false">
+      <h2>Cost per answer</h2>
+      <p class="hint">Measured from a live run, or estimated from published pricing. Edit it to match your own results.</p>
+      <div class="engines" role="radiogroup" aria-label="Answer engine">
+        <label class="engine"><input type="radio" name="engine" value="answers" checked>
+          <div><b>Brave Answers</b><em>Measured: $0.0539 in a live run (1 search, 9,512 tokens in, 476 out)</em></div></label>
+        <label class="engine"><input type="radio" name="engine" value="llm">
+          <div><b>LLM Context + Claude</b><em>Estimated: $0.005 Brave request + Claude Sonnet 5 tokens at $2 / $10 per million (about 5,000 in, 400 out)</em></div></label>
+        <label class="engine"><input type="radio" name="engine" value="custom">
+          <div><b>Custom</b><em>Enter any cost, e.g. from an answer’s “Under the hood” panel</em></div></label>
+      </div>
+      <div class="grid" style="margin-bottom:22px">
+        <div class="field"><label for="cost">Cost per answer</label><div class="inp"><span>$</span><input id="cost" type="number" min="0" step="0.0001" value="0.0539"></div></div>
+      </div>
+
+      <fieldset>
+        <legend>Traffic</legend>
+        <div class="grid">
+          <div class="field"><label for="visitors">Monthly product-page visitors</label><div class="inp"><input id="visitors" type="number" min="0" step="1000" value="100000"></div></div>
+          <div class="field"><label for="engage">Visitors who ask the assistant</label><div class="inp"><input id="engage" type="number" min="0" max="100" step="0.5" value="5"><span>%</span></div></div>
+          <div class="field"><label for="qps">Questions per engaged shopper</label><div class="inp"><input id="qps" type="number" min="0" step="0.5" value="2"></div></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Sales</legend>
+        <div class="grid">
+          <div class="field"><label for="aov">Average order value</label><div class="inp"><span>$</span><input id="aov" type="number" min="0" step="10" value="900"></div></div>
+          <div class="field"><label for="margin">Gross margin</label><div class="inp"><input id="margin" type="number" min="0" max="100" step="1" value="20"><span>%</span></div></div>
+          <div class="field"><label for="baseconv">Baseline conversion of these shoppers</label><div class="inp"><input id="baseconv" type="number" min="0" max="100" step="0.5" value="3"><span>%</span></div><small>Without the assistant</small></div>
+          <div class="field"><label for="lift">Conversion lift from the assistant</label><div class="inp"><input id="lift" type="number" min="0" max="100" step="0.1" value="1"><span>pts</span></div><small>Percentage points added</small></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Returns</legend>
+        <div class="grid">
+          <div class="field"><label for="retrate">Return rate on these purchases</label><div class="inp"><input id="retrate" type="number" min="0" max="100" step="0.5" value="8"><span>%</span></div></div>
+          <div class="field"><label for="retcut">Returns avoided by assistant users</label><div class="inp"><input id="retcut" type="number" min="0" max="100" step="1" value="10"><span>%</span></div><small>Relative reduction</small></div>
+          <div class="field"><label for="retcost">Cost to process one return</label><div class="inp"><span>$</span><input id="retcost" type="number" min="0" step="1" value="40"></div></div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Support</legend>
+        <div class="grid">
+          <div class="field"><label for="deflect">Questions that would have become a chat or call</label><div class="inp"><input id="deflect" type="number" min="0" max="100" step="1" value="5"><span>%</span></div></div>
+          <div class="field"><label for="contactcost">Cost per support contact</label><div class="inp"><span>$</span><input id="contactcost" type="number" min="0" step="0.5" value="6"></div></div>
+        </div>
+      </fieldset>
+    </form>
+
+    <aside class="results" aria-live="polite">
+      <div class="headline">
+        <div class="big" id="payback">–</div>
+        <p id="paybackText">answers are paid for by one kept sale</p>
+      </div>
+      <div class="panel">
+        <h2>Monthly picture</h2>
+        <div class="stats">
+          <div class="row"><span>Questions answered</span><b id="oQuestions">–</b></div>
+          <div class="row"><span>Answer cost</span><b class="neg" id="oCost">–</b></div>
+          <div class="row"><span>Extra orders</span><b id="oOrders">–</b></div>
+          <div class="row"><span>Extra gross profit</span><b id="oProfit">–</b></div>
+          <div class="row"><span>Returns avoided</span><b id="oReturns">–</b></div>
+          <div class="row"><span>Return savings</span><b id="oRetSave">–</b></div>
+          <div class="row"><span>Support savings</span><b id="oSupport">–</b></div>
+          <div class="row total"><span>Net monthly benefit</span><b id="oNet">–</b></div>
+          <div class="row"><span>Return on answer spend</span><b id="oRoi">–</b></div>
+        </div>
+        <div class="callout" id="breakeven">–</div>
+      </div>
+      <ul class="note">
+        <li>Default traffic, conversion, return and support figures are illustrative assumptions, not industry benchmarks. Replace them with the retailer's own data.</li>
+        <li>Answer costs come from a live Brave Answers run and published Brave and Anthropic pricing, which can change. Check current pricing before quoting.</li>
+        <li>Brave Search API costs don't include hosting or engineering time.</li>
+      </ul>
+    </aside>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const val = id => { const n = parseFloat($(id).value); return Number.isFinite(n) ? n : 0; };
+const money = (n, d = 0) => (n < 0 ? "-$" : "$") + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const num = (n, d = 0) => n.toLocaleString("en-US", { maximumFractionDigits: d });
+
+// Estimated LLM Context + Claude cost: one Brave Search-plan request plus Claude tokens
+const LLM_EST = 5 / 1000 + (5000 * 2 + 400 * 10) / 1e6;   // about $0.019
+const PRESETS = { answers: 0.0539, llm: +LLM_EST.toFixed(4) };
+
+function calc() {
+  const cost = val("cost");
+  const engaged = val("visitors") * val("engage") / 100;
+  const questions = engaged * val("qps");
+  const answerCost = questions * cost;
+
+  const profitPerSale = val("aov") * val("margin") / 100;
+  const extraOrders = engaged * val("lift") / 100;
+  const extraProfit = extraOrders * profitPerSale;
+
+  const purchases = engaged * (val("baseconv") + val("lift")) / 100;
+  const returnsAvoided = purchases * (val("retrate") / 100) * (val("retcut") / 100);
+  const returnSavings = returnsAvoided * val("retcost");
+
+  const supportSavings = questions * (val("deflect") / 100) * val("contactcost");
+
+  const benefit = extraProfit + returnSavings + supportSavings;
+  const net = benefit - answerCost;
+
+  $("payback").textContent = cost > 0 ? num(Math.floor(profitPerSale / cost)) : "∞";
+  $("paybackText").textContent = `answers are paid for by one kept ${money(val("aov"))} sale at ${num(val("margin"))}% margin (${money(profitPerSale)} profit) at ${money(cost, 4)} per answer`;
+  $("oQuestions").textContent = num(questions);
+  $("oCost").textContent = money(answerCost);
+  $("oOrders").textContent = num(extraOrders, 1);
+  $("oProfit").textContent = money(extraProfit);
+  $("oReturns").textContent = num(returnsAvoided, 1);
+  $("oRetSave").textContent = money(returnSavings);
+  $("oSupport").textContent = money(supportSavings);
+  $("oNet").textContent = money(net);
+  $("oRoi").textContent = answerCost > 0 ? num(benefit / answerCost, 1) + "×" : "–";
+
+  const breakEvenSales = profitPerSale > 0 ? answerCost / profitPerSale : 0;
+  $("breakeven").textContent = answerCost > 0
+    ? `Break-even: the assistant pays for its monthly answer cost if it keeps ${num(Math.ceil(breakEvenSales))} extra sale${Math.ceil(breakEvenSales) === 1 ? "" : "s"} a month, before counting any return or support savings.`
+    : "Enter a cost per answer to see the break-even point.";
+}
+
+document.querySelectorAll('input[name="engine"]').forEach(r => r.addEventListener("change", () => {
+  if (PRESETS[r.value] != null) $("cost").value = PRESETS[r.value];
+  else $("cost").focus();
+  calc();
+}));
+$("cost").addEventListener("input", () => {
+  const c = val("cost");
+  const match = Object.entries(PRESETS).find(([, v]) => Math.abs(v - c) < 1e-9);
+  document.querySelector(`input[name="engine"][value="${match ? match[0] : "custom"}"]`).checked = true;
+});
+$("form").addEventListener("input", calc);
+
+// Prefill from a live answer: roi.html?cost=0.0539&engine=answers
+const qs = new URLSearchParams(location.search);
+if (qs.has("cost") && Number.isFinite(parseFloat(qs.get("cost")))) {
+  $("cost").value = parseFloat(qs.get("cost"));
+  const e = qs.get("engine");
+  document.querySelector(`input[name="engine"][value="${e === "llm" ? "llm" : e === "answers" ? "answers" : "custom"}"]`).checked = true;
+  if (e === "llm" || e === "answers") {
+    // A live measurement overrides the preset label
+    const c = parseFloat(qs.get("cost"));
+    if (Math.abs(c - PRESETS[e]) > 1e-9) document.querySelector('input[name="engine"][value="custom"]').checked = true;
+  }
+}
+calc();
+</script>
+</body>
+</html>

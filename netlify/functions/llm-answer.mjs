@@ -17,6 +17,10 @@ const ANTHROPIC_URL = env("ANTHROPIC_URL") || "https://api.anthropic.com/v1/mess
 const MODEL = env("ANTHROPIC_MODEL") || "claude-sonnet-5";
 const FRESHNESS = env("LLM_FRESHNESS") ?? "pm"; // pages from the past month
 const RATE_LIMIT = Number(env("RATE_LIMIT_PER_MINUTE") || 6);
+// Published prices used for the cost estimate (check current pricing)
+const BRAVE_REQUEST_PRICE = Number(env("BRAVE_SEARCH_PRICE_PER_REQUEST") || 0.005); // $5 per 1,000
+const CLAUDE_IN_PER_M = Number(env("CLAUDE_INPUT_PRICE_PER_M") || 2);
+const CLAUDE_OUT_PER_M = Number(env("CLAUDE_OUTPUT_PRICE_PER_M") || 10);
 
 // Same rules as goggles/trusted-phone-reviews.goggle and compare.mjs
 const GOGGLE_RULES = [
@@ -187,6 +191,10 @@ export default async (req, context) => {
       description: s.snippets[0]?.slice(0, 240) || "",
     }));
 
+    const braveRequests = freshnessUsed === FRESHNESS ? 1 : 2;
+    const estimatedCost = braveRequests * BRAVE_REQUEST_PRICE
+      + ((answer.usage.input_tokens || 0) * CLAUDE_IN_PER_M + (answer.usage.output_tokens || 0) * CLAUDE_OUT_PER_M) / 1e6;
+
     return json(200, {
       mode: "live",
       engine: "llm-context+claude",
@@ -207,7 +215,9 @@ export default async (req, context) => {
           "Answer model": answer.model,
           "Model time": answer.latency_ms + " ms",
           "Sources retrieved / cited": `${ctx.items.length} / ${shown.length}`,
+          "Estimated cost (Brave + Claude)": "$" + estimatedCost.toFixed(4),
         },
+        estimated_cost: Number(estimatedCost.toFixed(4)),
       },
       total_ms: Date.now() - started,
     });
