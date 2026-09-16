@@ -54,6 +54,7 @@ The page never sees the API key. The function reads it from Netlify's environmen
 | `ANTHROPIC_API_KEY` | For LLM Context mode | Claude key; the engine switch appears only when this and a Search key are set |
 | `ANTHROPIC_MODEL` | No | Claude model for LLM Context mode (default `claude-sonnet-5`) |
 | `CLAUDE_INPUT_PRICE_PER_M`, `CLAUDE_OUTPUT_PRICE_PER_M`, `BRAVE_SEARCH_PRICE_PER_REQUEST` | No | Prices used for the LLM Context cost estimate (defaults 2, 10, 0.005) |
+| `CLAUDE_MAX_TOKENS` | No | Longest answer Claude may write in LLM Context mode (default 600) |
 | `LLM_FRESHNESS` | No | LLM Context freshness filter (default `pm`, past month; empty for any date) |
 | `BRAVE_SEARCH_API_KEY` | Recommended | A Search-plan key for the Goggles comparison, if different from `BRAVE_API_KEY` |
 | `GOGGLE_URL` | No | Raw GitHub URL of the registered hosted Goggle. If unset, the rules are sent inline |
@@ -71,6 +72,8 @@ The help widget has an **Answer engine** switch:
 | **LLM Context + Claude** | Brave LLM Context returns page content filtered by the Goggle and limited to recent pages; Claude writes the cited answer from only those sources | `BRAVE_SEARCH_API_KEY` (Search plan, which includes LLM Context) + `ANTHROPIC_API_KEY` |
 
 Answers is the fastest path to a cited answer. LLM Context lets the retailer choose its own model and voice, and it's where Goggles shape the written answer, because Goggles don't apply to the Answers API. If no recent pages match, the function retries without the freshness filter and says so under **Under the hood**.
+
+In LLM Context mode, Claude's answer **streams**: words appear as they're written, then the finished answer (citations, sources, cost) replaces the draft. Answers are kept short (at most three bullets per section) for speed. **Under the hood** shows the time to first word and the total model time.
 
 ## ROI calculator
 

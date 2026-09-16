@@ -106,22 +106,25 @@ const DECISION_WORDS = /\b(upgrade|pros?|cons?|worth|should i|switch|wait)\b/i;
 
 function systemPrompt(question) {
   const format = DECISION_WORDS.test(question)
-    ? "Format: a two-sentence summary; a heading line 'Reasons to upgrade' followed by 3-5 bullet points starting with '- '; a heading line 'Reasons to wait' followed by 3-5 bullet points; then one line starting 'Bottom line:'."
-    : "Format: a two-sentence summary, then up to 5 bullet points starting with '- ', then one line starting 'Bottom line:'.";
+    ? "Format: a one- or two-sentence summary; a heading line 'Reasons to upgrade' followed by at most 3 bullet points starting with '- '; a heading line 'Reasons to wait' followed by at most 3 bullet points; then one line starting 'Bottom line:'."
+    : "Format: a one- or two-sentence summary, then at most 3 bullet points starting with '- ', then one line starting 'Bottom line:'.";
   return [
     "You are the in-app shopping assistant for Lionheart Electronics.",
     "Answer ONLY from the numbered sources provided. Do not use outside knowledge.",
     "After each claim, cite its source number in square brackets, like [2]. Cite only numbers that appear in the sources.",
     "If the sources don't answer the question, say so plainly and summarize what they do cover.",
-    "Write for a shopper: clear, balanced, no hype. Use plain text; headings are plain lines, not markdown symbols.",
+    "Write for a shopper: clear, balanced, no hype. Keep each bullet under 20 words and the whole answer under 170 words. Use plain text; headings are plain lines, not markdown symbols.",
     format,
   ].join("\n");
 }
 
-async function claudeAnswer(question, items) {
+const MAX_TOKENS = Number(env("CLAUDE_MAX_TOKENS") || 600);
+
+// Starts a streaming Claude request and returns the open response
+// (checked for errors before any bytes go to the browser).
+async function startClaude(question, items) {
   const sourcesText = items.map((s) =>
     `[${s.number}] ${s.title} (${s.site})\n${s.snippets.join("\n").slice(0, 3000)}`).join("\n\n");
-  const started = Date.now();
   const resp = await fetch(ANTHROPIC_URL, {
     method: "POST",
     headers: {
@@ -131,17 +134,45 @@ async function claudeAnswer(question, items) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1000,
+      max_tokens: MAX_TOKENS,
+      stream: true,
       system: systemPrompt(question),
       messages: [{ role: "user", content: `Shopper question: ${question}\n\nSources:\n\n${sourcesText}` }],
     }),
-    signal: AbortSignal.timeout(40_000),
+    signal: AbortSignal.timeout(45_000),
   });
   if (resp.status === 401) throw new Error("Claude refused the key (HTTP 401). Check ANTHROPIC_API_KEY in Netlify.");
   if (!resp.ok) throw new Error(`Claude HTTP ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
-  const data = await resp.json();
-  const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("").trim();
-  return { text, usage: data.usage || {}, latency_ms: Date.now() - started, model: data.model || MODEL };
+  return resp;
+}
+
+// Reads Claude's Server-Sent Events: text deltas, then token usage
+async function* claudeEvents(resp) {
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const raw of lines) {
+      const line = raw.trim();
+      if (!line.startsWith("data:")) continue;
+      let ev;
+      try { ev = JSON.parse(line.slice(5).trim()); } catch { continue; }
+      if (ev.type === "message_start") {
+        yield { kind: "start", model: ev.message?.model, input_tokens: ev.message?.usage?.input_tokens };
+      } else if (ev.type === "content_block_delta" && ev.delta?.type === "text_delta") {
+        yield { kind: "text", text: ev.delta.text };
+      } else if (ev.type === "message_delta") {
+        yield { kind: "end", output_tokens: ev.usage?.output_tokens };
+      } else if (ev.type === "error") {
+        throw new Error(`Claude stream error: ${ev.error?.message || "unknown"}`);
+      }
+    }
+  }
 }
 
 // ---------- HTTP handler ----------
@@ -181,45 +212,75 @@ export default async (req, context) => {
       });
     }
 
-    const answer = await claudeAnswer(question, ctx.items);
+    const claudeStarted = Date.now();
+    const claudeResp = await startClaude(question, ctx.items);
+    const encoder = new TextEncoder();
+    const line = (obj) => encoder.encode(JSON.stringify(obj) + "\n");
 
-    // Show only the sources Claude actually cited (keeping their numbers)
-    const cited = new Set([...answer.text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])));
-    const shown = ctx.items.filter((s) => cited.has(s.number));
-    const sources = (shown.length ? shown : ctx.items).map((s) => ({
-      number: s.number, title: s.title, url: s.url, site: s.site,
-      description: s.snippets[0]?.slice(0, 240) || "",
-    }));
+    const body = new ReadableStream({
+      async start(controller) {
+        let text = "", model = MODEL, tokensIn = 0, tokensOut = 0, firstWordMs = null;
+        try {
+          controller.enqueue(line({ type: "meta", engine: "llm-context+claude", sources_retrieved: ctx.items.length }));
+          for await (const ev of claudeEvents(claudeResp)) {
+            if (ev.kind === "start") { model = ev.model || model; tokensIn = ev.input_tokens || 0; }
+            else if (ev.kind === "text") {
+              if (firstWordMs === null) firstWordMs = Date.now() - claudeStarted;
+              text += ev.text;
+              controller.enqueue(line({ type: "delta", text: ev.text }));
+            }
+            else if (ev.kind === "end") tokensOut = ev.output_tokens || tokensOut;
+          }
+          text = text.trim();
+          const modelMs = Date.now() - claudeStarted;
 
-    const braveRequests = freshnessUsed === FRESHNESS ? 1 : 2;
-    const estimatedCost = braveRequests * BRAVE_REQUEST_PRICE
-      + ((answer.usage.input_tokens || 0) * CLAUDE_IN_PER_M + (answer.usage.output_tokens || 0) * CLAUDE_OUT_PER_M) / 1e6;
+          // Show only the sources Claude actually cited (keeping their numbers)
+          const cited = new Set([...text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])));
+          const shown = ctx.items.filter((s) => cited.has(s.number));
+          const sources = (shown.length ? shown : ctx.items).map((s) => ({
+            number: s.number, title: s.title, url: s.url, site: s.site,
+            description: s.snippets[0]?.slice(0, 240) || "",
+          }));
+          const braveRequests = freshnessUsed === FRESHNESS ? 1 : 2;
+          const estimatedCost = braveRequests * BRAVE_REQUEST_PRICE
+            + (tokensIn * CLAUDE_IN_PER_M + tokensOut * CLAUDE_OUT_PER_M) / 1e6;
 
-    return json(200, {
-      mode: "live",
-      engine: "llm-context+claude",
-      question,
-      answer: null,
-      answer_text: answer.text,
-      answer_note: null,
-      sources,
-      brave: {
-        endpoint: "GET /res/v1/llm/context",
-        query: question,
-        params: { goggles: env("GOGGLE_URL") ? "hosted" : "inline Trusted Phone Reviews",
-                  freshness: freshnessUsed, maximum_number_of_urls: 10, maximum_number_of_tokens: 6000 },
-        latency_ms: ctx.latency_ms,
-        result_count: ctx.items.length,
-        usage: { "Tokens-In": answer.usage.input_tokens, "Tokens-Out": answer.usage.output_tokens },
-        extra: {
-          "Answer model": answer.model,
-          "Model time": answer.latency_ms + " ms",
-          "Sources retrieved / cited": `${ctx.items.length} / ${shown.length}`,
-          "Estimated cost (Brave + Claude)": "$" + estimatedCost.toFixed(4),
-        },
-        estimated_cost: Number(estimatedCost.toFixed(4)),
+          controller.enqueue(line({ type: "done", data: {
+            mode: "live",
+            engine: "llm-context+claude",
+            question,
+            answer: null,
+            answer_text: text,
+            answer_note: text ? null : "Claude returned an empty answer.",
+            sources,
+            brave: {
+              endpoint: "GET /res/v1/llm/context",
+              query: question,
+              params: { goggles: env("GOGGLE_URL") ? "hosted" : "inline Trusted Phone Reviews",
+                        freshness: freshnessUsed, maximum_number_of_urls: 10, maximum_number_of_tokens: 6000 },
+              latency_ms: ctx.latency_ms,
+              result_count: ctx.items.length,
+              usage: { "Tokens-In": tokensIn, "Tokens-Out": tokensOut },
+              extra: {
+                "Answer model": model,
+                "Time to first word": firstWordMs === null ? "\u2013" : firstWordMs + " ms",
+                "Model time": modelMs + " ms",
+                "Sources retrieved / cited": `${ctx.items.length} / ${shown.length}`,
+                "Estimated cost (Brave + Claude)": "$" + estimatedCost.toFixed(4),
+              },
+              estimated_cost: Number(estimatedCost.toFixed(4)),
+            },
+            total_ms: Date.now() - started,
+          } }));
+        } catch (err) {
+          controller.enqueue(line({ type: "error", error: err.message || "The answer stream failed." }));
+        }
+        controller.close();
       },
-      total_ms: Date.now() - started,
+    });
+    return new Response(body, {
+      status: 200,
+      headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store" },
     });
   } catch (err) {
     return json(502, { error: err.message || "The request failed." });

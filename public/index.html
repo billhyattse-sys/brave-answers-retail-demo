@@ -320,7 +320,7 @@ let siteMode = "live";
 let engine = "answers";
 const ENGINES = {
   answers: { path: "/api/ask", label: "Brave Answers", wait: "Brave is searching and writing an answer\u2026" },
-  llm: { path: "/api/llm-answer", label: "LLM Context + Claude", wait: "Brave is retrieving trusted sources; Claude is writing the answer\u2026" },
+  llm: { path: "/api/llm-answer", label: "LLM Context + Claude", wait: "Brave is retrieving trusted sources\u2026" },
 };
 document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
   engine = b.dataset.engine;
@@ -545,6 +545,54 @@ async function showRecorded() {
   }
 }
 
+// Streams the LLM Context + Claude answer: words appear as Claude writes them,
+// then the finished answer (citations, sources, Under the hood) replaces the draft.
+async function readAnswerStream(r, wait, userMsg, showError) {
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "", text = "", live = null, finished = false, pending = false;
+  const draw = () => {
+    pending = false;
+    if (!live) return;
+    live.replaceChildren(
+      el("div", { class: "engine-tag", text: "LLM Context + Claude \u00b7 writing\u2026" }),
+      ...renderProse(text, "live", new Set()));
+  };
+  const handle = (msg) => {
+    if (msg.type === "delta") {
+      text += msg.text;
+      if (!live) {
+        wait.remove();
+        live = el("div", { class: "msg-bot live" });
+        thread.append(live);
+        scrollToTop(userMsg);
+      }
+      if (!pending) { pending = true; requestAnimationFrame(draw); }
+    } else if (msg.type === "done") {
+      finished = true;
+      wait.remove();
+      if (live) live.remove();
+      renderAnswer(msg.data);
+      scrollToTop(userMsg);
+    } else if (msg.type === "error") {
+      finished = true;
+      wait.remove();
+      if (live) live.remove();
+      showError(msg.error);
+    }
+  };
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const l of lines) { if (l.trim()) { try { handle(JSON.parse(l)); } catch {} } }
+  }
+  if (buffer.trim()) { try { handle(JSON.parse(buffer)); } catch {} }
+  if (!finished) { wait.remove(); if (live) live.remove(); showError("The answer stream ended early."); }
+}
+
 async function ask(text) {
   text = text.trim();
   if (!text) return;
@@ -566,10 +614,14 @@ async function ask(text) {
     if (siteMode === "replay") { wait.remove(); await showRecorded(); send.disabled = false; return; }
     const r = await fetch(ENGINES[engine].path, { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question: text, code: $("#code").value }) });
-    const d = await r.json();
-    wait.remove();
-    if (!r.ok) { showError(d.error || "The request failed."); if (r.status === 401) $("#code").focus(); }
-    else { renderAnswer(d); scrollToTop(userMsg); }
+    if (r.ok && (r.headers.get("Content-Type") || "").includes("ndjson")) {
+      await readAnswerStream(r, wait, userMsg, showError);
+    } else {
+      const d = await r.json();
+      wait.remove();
+      if (!r.ok) { showError(d.error || "The request failed."); if (r.status === 401) $("#code").focus(); }
+      else { renderAnswer(d); scrollToTop(userMsg); }
+    }
   } catch (e) {
     wait.remove();
     showError("Can't reach the demo server right now.");
