@@ -8,6 +8,11 @@
 $discard,site=quora.com
 $discard,site=trustpilot.com
 $discard,site=consumeraffairs.com
+$discard,site=alibaba.com
+$discard,site=facebook.com
+
+! Keep forum threads, but below established reviewers
+$downrank=3,site=reddit.com
 
 ! Boost established review publications
 $boost=4,site=gsmarena.com

@@ -22,6 +22,9 @@ export const GOGGLE_RULES = [
   "$discard,site=quora.com",
   "$discard,site=trustpilot.com",
   "$discard,site=consumeraffairs.com",
+  "$discard,site=alibaba.com",
+  "$discard,site=facebook.com",
+  "$downrank=3,site=reddit.com",
   "$boost=4,site=gsmarena.com",
   "$boost=4,site=theverge.com",
   "$boost=4,site=cnet.com",
@@ -59,6 +62,24 @@ export function ruleSites(rules) {
     if (m) out[m[1]].push(m[2].toLowerCase());
   }
   return out;
+}
+
+// Web Search works best with keywords, and a full conversational question
+// can return no results. Strip question words and filler before searching.
+const STOPWORDS = new Set(("a an the and or but if of to in on at for from by with about into over " +
+  "is are was were be been being am do does did has have had can could should would will shall may might must " +
+  "i me my we our you your it its they them their he she his her this that these those there here " +
+  "what whats which who whom whose why how when where give tell show list some any please " +
+  "vs versus than then so just really very").split(/\s+/));
+
+export function toKeywords(question) {
+  const words = question
+    .replace(/[‘’']/g, "")
+    .replace(/[^\p{L}\p{N}\s.+-]/gu, " ")
+    .split(/\s+/)
+    .map((w) => w.replace(/^[.\-]+|[.\-]+$/g, ""))
+    .filter((w) => w && !STOPWORDS.has(w.toLowerCase()));
+  return (words.join(" ") || question).slice(0, 200);
 }
 
 const hostOf = (url) => (url || "").replace(/^https?:\/\/(www\.)?/, "").split("/")[0].toLowerCase();
@@ -125,16 +146,18 @@ export default async (req, context) => {
     return json(429, { error: "Too many requests in a minute. Wait a moment and try again." });
   }
 
+  const searchQuery = toKeywords(question);
   const hosted = env("GOGGLE_URL");
   const goggle = hosted || GOGGLE_RULES;
   try {
     // Both searches run at the same time
     const [standard, goggled] = await Promise.all([
-      webSearch(question, null),
-      webSearch(question, goggle),
+      webSearch(searchQuery, null),
+      webSearch(searchQuery, goggle),
     ]);
     return json(200, {
       question,
+      search_query: searchQuery,
       standard,
       goggled,
       goggle: {
