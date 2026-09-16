@@ -21,14 +21,17 @@ The page never sees the API key. The function reads it from Netlify's environmen
 | Component | Endpoint | Used for |
 |---|---|---|
 | Answers API | `POST /res/v1/chat/completions` | Search and cited answer in one OpenAI-compatible call |
-| Web Search API | `GET /res/v1/web/search` | Alternate path in the local Python version (`local/`) |
+| Web Search API | `GET /res/v1/web/search` | Goggles comparison panel; alternate path in the local Python version |
+| Goggles | `goggles` parameter on Web Search | Re-ranks results: removes forums and complaint sites, boosts established review publications |
 
 ## Project layout
 
 | Path | What it is |
 |---|---|
 | `public/` | The website: storefront page, recorded answer (`replay.json`), layout sample (`sample.json`) |
-| `netlify/functions/ask.mjs` | Server-side Brave call, access code, rate limit |
+| `netlify/functions/ask.mjs` | Server-side Brave Answers call, access code, rate limit |
+| `netlify/functions/compare.mjs` | Goggles comparison: the same question through Web Search with and without the Goggle |
+| `goggles/trusted-phone-reviews.goggle` | The Goggle's rules, ready to register as a hosted Goggle |
 | `netlify.toml` | Tells Netlify where the site and function live |
 | `local/` | Python version for running on your own computer |
 
@@ -46,9 +49,35 @@ The page never sees the API key. The function reads it from Netlify's environmen
 | `DEMO_ACCESS_CODE` | Recommended | A code visitors must enter before asking live questions |
 | `RATE_LIMIT_PER_MINUTE` | No | Questions allowed per visitor per minute (default 6) |
 | `DEMO_MODE` | No | Set to `replay` to serve only the recorded answer |
+| `BRAVE_SEARCH_API_KEY` | No | A Search-plan key for the Goggles comparison, if different from `BRAVE_API_KEY` |
+| `GOGGLE_URL` | No | Raw GitHub URL of the registered hosted Goggle. If unset, the rules are sent inline |
 
 4. Redeploy so the function picks up the variables.
 5. Protect your credits: set a monthly credit limit in your Brave dashboard.
+
+## Goggles
+
+Goggles re-rank Brave's results with simple rules. Under each answer, **Compare sources with Goggles** runs the shopper's question through Web Search twice, with and without the "Trusted Phone Reviews" Goggle, and shows the two source lists side by side.
+
+Goggles work with the Web Search, LLM Context, and News Search APIs, not the Answers API, which is why the comparison uses Web Search.
+
+The rules live in `goggles/trusted-phone-reviews.goggle`:
+
+```
+$discard,site=quora.com
+$discard,site=trustpilot.com
+$discard,site=consumeraffairs.com
+$boost=4,site=gsmarena.com
+$boost=4,site=theverge.com
+...
+```
+
+By default the function sends these rules inline, which works immediately. To use the hosted file instead:
+
+1. Register its raw GitHub URL at https://search.brave.com/goggles/create.
+2. Set `GOGGLE_URL` in Netlify to that URL and redeploy.
+
+If you change the rules, update both the `.goggle` file and `GOGGLE_RULES` in `compare.mjs`.
 
 ## Run it on your own computer
 
@@ -59,7 +88,7 @@ export BRAVE_API_KEY="your-key"
 python3 app.py
 ```
 
-Open http://127.0.0.1:8000. Successful answers are saved to `local/cache/last_response.json`. Copy that file to `public/replay.json` to update the site's recorded answer.
+Open http://127.0.0.1:8000. The Goggles comparison runs on the website version only. Successful answers are saved to `local/cache/last_response.json`. Copy that file to `public/replay.json` to update the site's recorded answer.
 
 ## Notes
 

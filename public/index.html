@@ -134,6 +134,31 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
 .powered{display:flex;align-items:center;gap:6px;justify-content:center;font-size:12px;color:var(--muted);padding:0 0 10px}
 .powered i{width:8px;height:8px;border-radius:2px;background:var(--brave);display:inline-block}
 
+
+/* Goggles comparison */
+.compare-btn{margin-top:12px;border:1.5px solid var(--evergreen);background:#fff;color:var(--evergreen);border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.compare-btn:disabled{opacity:.55;cursor:default}
+.cmp{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff}
+.cmp h3{margin:0 0 2px;font-size:15px}
+.cmp .sub{margin:0 0 10px;font-size:13px;color:var(--muted)}
+.cmp .tally{font-size:13px;background:var(--mint-soft);border-radius:6px;padding:8px 10px;margin:0 0 12px;display:grid;gap:3px}
+.cmp-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmp-cols h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.cmp-cols ol{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.cmp-cols li{font-size:12.5px;display:grid;grid-template-columns:18px 1fr;gap:4px;align-items:baseline;padding:4px 6px;border-radius:5px;min-width:0}
+.cmp-cols li a{color:var(--ink);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-cols li a:hover{text-decoration:underline}
+.cmp-cols .r{color:var(--muted);font-weight:700;font-size:11px}
+.cmp-cols li.gone{background:#FCEBEA}
+.cmp-cols li.gone a{text-decoration:line-through;color:var(--sale)}
+.cmp-cols li.up{background:var(--mint-soft)}
+.cmp-cols li.up a{font-weight:700;color:var(--evergreen)}
+.tag{display:inline-block;font-size:10px;font-weight:700;border-radius:4px;padding:0 4px;margin-left:4px;vertical-align:1px}
+.tag.gone{background:var(--sale);color:#fff}
+.tag.up{background:var(--evergreen);color:#fff}
+.cmp pre{background:var(--surface);border-radius:6px;padding:8px;font-size:11.5px;white-space:pre-wrap;word-break:break-word;margin:8px 0 0}
+.cmp details{margin-top:10px;font-size:13px}
+.cmp details summary{cursor:pointer;font-weight:600;color:var(--muted)}
 @media (max-width:640px){
   .assistant{right:0;bottom:0;width:100%;height:100%;border-radius:0}
   .hero{padding:24px}
@@ -404,8 +429,72 @@ function renderAnswer(d) {
       el("dt", { text: "Brave time" }), el("dd", { text: (b.latency_ms ?? "–") + " ms" }),
       el("dt", { text: "Total time" }), el("dd", { text: (d.total_ms ?? "–") + " ms" }),
       ...usageRows)));
+  if (d.question) {
+    const btn = el("button", { class: "compare-btn", type: "button", text: "Compare sources with Goggles" });
+    btn.onclick = () => compareSources(d.question, btn);
+    box.append(btn);
+  }
   thread.append(box);
   return box;
+}
+
+
+// ---------- Goggles comparison ----------
+const matchesSite = (site, list) => list.some(r => site === r || site.endsWith("." + r));
+
+function renderCompare(d) {
+  const sites = d.goggle.sites;
+  const removed = [...new Set(d.standard.results.map(r => r.site).filter(x => matchesSite(x, sites.discard)))];
+  const boostedTop = [...new Set(d.goggled.results.slice(0, 5).map(r => r.site).filter(x => matchesSite(x, sites.boost)))];
+  const col = (title, results, mark) => el("div", {},
+    el("h4", { text: title }),
+    el("ol", {}, results.map(r => {
+      const kind = mark(r.site);
+      const li = el("li", { class: kind || "" },
+        el("span", { class: "r", text: r.rank }),
+        el("a", { href: safeUrl(r.url), target: "_blank", rel: "noopener", title: r.title, text: r.site }));
+      if (kind) li.lastChild.title = (kind === "gone" ? "Removed by the Goggle: " : "Boosted by the Goggle: ") + r.title;
+      return li;
+    })));
+  const card = el("div", { class: "cmp" },
+    el("h3", { text: "Goggles comparison" }),
+    el("p", { class: "sub", text: `Same question through Brave Web Search, with and without the “${d.goggle.name}” Goggle. Red = removed, green = boosted.` }),
+    el("div", { class: "tally" },
+      el("div", { text: removed.length ? `Removed by the Goggle: ${removed.join(", ")}` : "No discarded sites appeared for this question." }),
+      el("div", { text: boostedTop.length ? `Trusted reviewers in the top 5: ${boostedTop.join(", ")}` : "No boosted sites reached the top 5 for this question." })),
+    el("div", { class: "cmp-cols" },
+      col("Standard", d.standard.results, site => matchesSite(site, sites.discard) ? "gone" : ""),
+      col("With Goggle", d.goggled.results, site => matchesSite(site, sites.boost) ? "up" : "")),
+    el("details", {}, el("summary", { text: "Goggle rules" }), el("pre", { text: d.goggle.rules })),
+    el("details", { class: "hood" }, el("summary", { text: "Under the hood" }),
+      el("dl", {},
+        el("dt", { text: "Endpoint" }), el("dd", { text: d.endpoint + " (2 calls)" }),
+        el("dt", { text: "Goggle sent" }), el("dd", { text: d.goggle.source === "hosted" ? d.goggle.url : "inline rules" }),
+        el("dt", { text: "Standard time" }), el("dd", { text: d.standard.latency_ms + " ms" }),
+        el("dt", { text: "Goggle time" }), el("dd", { text: d.goggled.latency_ms + " ms" }))));
+  thread.append(card);
+  return card;
+}
+
+async function compareSources(question, btn) {
+  btn.disabled = true;
+  const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), "Running the search with and without the Goggle…");
+  thread.append(wait); scrollDown();
+  try {
+    const r = await fetch("/api/compare", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, code: $("#code").value }) });
+    wait.remove();
+    if (r.status === 404) throw new Error("The comparison runs on the website version only.");
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || "The comparison failed.");
+    btn.remove();
+    scrollToTop(renderCompare(d));
+  } catch (e) {
+    wait.remove();
+    thread.append(el("div", { class: "error", text: e.message }));
+    scrollDown();
+    btn.disabled = false;
+  }
 }
 
 async function showRecorded() {
