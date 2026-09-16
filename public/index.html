@@ -462,7 +462,7 @@ function renderAnswer(d) {
       ...usageRows), roiLink));
   if (d.question) {
     const btn = el("button", { class: "compare-btn", type: "button", text: "Compare sources with Goggles" });
-    btn.onclick = () => compareSources(d.question, btn);
+    btn.onclick = () => compareSources(d.question, btn, d.engine);
     box.append(btn);
   }
   thread.append(box);
@@ -473,7 +473,7 @@ function renderAnswer(d) {
 // ---------- Goggles comparison ----------
 const matchesSite = (site, list) => list.some(r => site === r || site.endsWith("." + r));
 
-function renderCompare(d) {
+function renderCompare(d, answerEngine) {
   const sites = d.goggle.sites;
   const removed = [...new Set(d.standard.results.map(r => r.site).filter(x => matchesSite(x, sites.discard)))];
   const boostedTop = [...new Set(d.goggled.results.slice(0, 5).map(r => r.site).filter(x => matchesSite(x, sites.boost)))];
@@ -489,7 +489,10 @@ function renderCompare(d) {
     })));
   const card = el("div", { class: "cmp" },
     el("h3", { text: "Goggles comparison" }),
-    el("p", { class: "sub", text: `Same question through Brave Web Search, with and without the “${d.goggle.name}” Goggle. Red = removed, green = boosted.` }),
+    el("p", { class: "sub", text: `Same question through Brave Web Search, with and without the “${d.goggle.name}” Goggle. Red = removed, green = boosted. This panel is separate from the answer engine above.` }),
+    answerEngine === "brave-answers"
+      ? el("p", { class: "note", text: "Goggles don’t apply to Brave Answers’ own sources. Switch the answer engine to LLM Context + Claude to apply this Goggle to the answer itself." })
+      : "",
     el("div", { class: "tally" },
       el("div", { text: removed.length ? `Removed by the Goggle: ${removed.join(", ")}` : "No discarded sites appeared for this question." }),
       el("div", { text: boostedTop.length ? `Trusted reviewers in the top 5: ${boostedTop.join(", ")}` : "No boosted sites reached the top 5 for this question." })),
@@ -512,7 +515,7 @@ function renderCompare(d) {
   return card;
 }
 
-async function compareSources(question, btn) {
+async function compareSources(question, btn, answerEngine) {
   btn.disabled = true;
   const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), "Running the search with and without the Goggle…");
   thread.append(wait); scrollDown();
@@ -524,7 +527,7 @@ async function compareSources(question, btn) {
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || "The comparison failed.");
     btn.remove();
-    scrollToTop(renderCompare(d));
+    scrollToTop(renderCompare(d, answerEngine));
   } catch (e) {
     wait.remove();
     thread.append(el("div", { class: "error", text: e.message }));

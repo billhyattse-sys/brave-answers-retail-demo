@@ -64,24 +64,6 @@ export function ruleSites(rules) {
   return out;
 }
 
-// Web Search works best with keywords, and a full conversational question
-// can return no results. Strip question words and filler before searching.
-const STOPWORDS = new Set(("a an the and or but if of to in on at for from by with about into over " +
-  "is are was were be been being am do does did has have had can could should would will shall may might must " +
-  "i me my we our you your it its they them their he she his her this that these those there here " +
-  "what whats which who whom whose why how when where give tell show list some any please " +
-  "vs versus than then so just really very").split(/\s+/));
-
-export function toKeywords(question) {
-  const words = question
-    .replace(/[‘’']/g, "")
-    .replace(/[^\p{L}\p{N}\s.+-]/gu, " ")
-    .split(/\s+/)
-    .map((w) => w.replace(/^[.\-]+|[.\-]+$/g, ""))
-    .filter((w) => w && !STOPWORDS.has(w.toLowerCase()));
-  return (words.join(" ") || question).slice(0, 200);
-}
-
 const hostOf = (url) => (url || "").replace(/^https?:\/\/(www\.)?/, "").split("/")[0].toLowerCase();
 
 async function webSearch(query, goggle) {
@@ -146,7 +128,8 @@ export default async (req, context) => {
     return json(429, { error: "Too many requests in a minute. Wait a moment and try again." });
   }
 
-  const searchQuery = toKeywords(question);
+  // Send the shopper's exact question: Web Search handles full questions well
+  const searchQuery = question;
   const hosted = env("GOGGLE_URL");
   const goggle = hosted || GOGGLE_RULES;
   try {

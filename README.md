@@ -89,7 +89,9 @@ Cost presets: **Brave Answers** uses a measured live run ($0.0539: 1 search, 9,5
 
 Goggles re-rank Brave's results with simple rules. Under each answer, **Compare sources with Goggles** runs the shopper's question through Web Search twice, with and without the "Trusted Phone Reviews" Goggle, and shows the two source lists side by side.
 
-Goggles work with the Web Search, LLM Context, and News Search APIs, not the Answers API. The comparison panel uses Web Search to show the effect side by side; the LLM Context engine applies the same Goggle to the answer itself.
+Goggles work with the Web Search, LLM Context, and News Search APIs, not the Answers API. The comparison panel uses Web Search (two calls with the shopper's exact question) to show the effect side by side, and it is separate from the answer engine; the LLM Context engine applies the same Goggle to the answer itself.
+
+Web Search powers the comparison because a ranked list makes the Goggle's effect easy to see. In a production retail assistant, the shopper-facing answer would use LLM Context (or Answers); Web Search would serve internal tools such as Goggle tuning.
 
 The rules live in `goggles/trusted-phone-reviews.goggle`:
 
