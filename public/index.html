@@ -143,7 +143,9 @@ details.hood summary{cursor:pointer;font-weight:600;color:var(--muted)}
 
 /* Goggles comparison */
 .roi-link{display:inline-block;margin-top:8px;font-weight:700;font-size:13px}
-.compare-btn{margin-top:12px;border:1.5px solid var(--evergreen);background:#fff;color:var(--evergreen);border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.compare-row{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.compare-label{width:100%;font-size:13px;color:var(--muted)}
+.compare-btn{border:1.5px solid var(--evergreen);background:#fff;color:var(--evergreen);border-radius:8px;padding:8px 12px;font-weight:700;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
 .compare-btn:disabled{opacity:.55;cursor:default}
 .cmp{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff}
 .cmp h3{margin:0 0 2px;font-size:15px}
@@ -461,9 +463,13 @@ function renderAnswer(d) {
       el("dt", { text: "Total time" }), el("dd", { text: (d.total_ms ?? "–") + " ms" }),
       ...usageRows), roiLink));
   if (d.question) {
-    const btn = el("button", { class: "compare-btn", type: "button", text: "Compare sources with Goggles" });
-    btn.onclick = () => compareSources(d.question, btn, d.engine);
-    box.append(btn);
+    const row = el("div", { class: "compare-row" });
+    const webBtn = el("button", { class: "compare-btn", type: "button", text: "Goggles on Web Search" });
+    const llmBtn = el("button", { class: "compare-btn", type: "button", text: "Goggles on LLM Context" });
+    webBtn.onclick = () => compareSources(d.question, webBtn, d.engine, "web");
+    llmBtn.onclick = () => compareSources(d.question, llmBtn, d.engine, "llm");
+    row.append(el("span", { class: "compare-label", text: "Compare sources with and without the Goggle:" }), webBtn, llmBtn);
+    box.append(row);
   }
   thread.append(box);
   return box;
@@ -488,8 +494,10 @@ function renderCompare(d, answerEngine) {
       return li;
     })));
   const card = el("div", { class: "cmp" },
-    el("h3", { text: "Goggles comparison" }),
-    el("p", { class: "sub", text: `Same question through Brave Web Search, with and without the “${d.goggle.name}” Goggle. Red = removed, green = boosted. This panel is separate from the answer engine above.` }),
+    el("h3", { text: d.api === "llm" ? "Goggles comparison: LLM Context" : "Goggles comparison: Web Search" }),
+    el("p", { class: "sub", text: d.api === "llm"
+      ? `Same question through Brave LLM Context, with and without the “${d.goggle.name}” Goggle: the pages the LLM Context + Claude engine reads. Red = removed, green = boosted.`
+      : `Same question through Brave Web Search, with and without the “${d.goggle.name}” Goggle. Red = removed, green = boosted. This panel is separate from the answer engine above.` }),
     answerEngine === "brave-answers"
       ? el("p", { class: "note", text: "Goggles don’t apply to Brave Answers’ own sources. Switch the answer engine to LLM Context + Claude to apply this Goggle to the answer itself." })
       : "",
@@ -497,7 +505,7 @@ function renderCompare(d, answerEngine) {
       el("div", { text: removed.length ? `Removed by the Goggle: ${removed.join(", ")}` : "No discarded sites appeared for this question." }),
       el("div", { text: boostedTop.length ? `Trusted reviewers in the top 5: ${boostedTop.join(", ")}` : "No boosted sites reached the top 5 for this question." })),
     (!d.standard.results.length && !d.goggled.results.length)
-      ? el("p", { class: "error", text: "Brave Web Search returned no results for this question, with or without the Goggle. Open \u201cUnder the hood\u201d below for what Brave sent back." })
+      ? el("p", { class: "error", text: (d.api === "llm" ? "Brave LLM Context" : "Brave Web Search") + " returned no results for this question, with or without the Goggle. Open \u201cUnder the hood\u201d below for what Brave sent back." })
       : "",
     el("div", { class: "cmp-cols" },
       col("Standard", d.standard.results, site => matchesSite(site, sites.discard) ? "gone" : ""),
@@ -506,6 +514,7 @@ function renderCompare(d, answerEngine) {
     el("details", { class: "hood" }, el("summary", { text: "Under the hood" }),
       el("dl", {},
         el("dt", { text: "Endpoint" }), el("dd", { text: d.endpoint + " (2 calls)" }),
+        ...(d.freshness ? [el("dt", { text: "Freshness" }), el("dd", { text: d.freshness })] : []),
         el("dt", { text: "Search query" }), el("dd", { text: d.search_query || d.question }),
         el("dt", { text: "Goggle sent" }), el("dd", { text: d.goggle.source === "hosted" ? d.goggle.url : "inline rules" }),
         el("dt", { text: "Standard time" }), el("dd", { text: d.standard.latency_ms + " ms" }),
@@ -515,13 +524,13 @@ function renderCompare(d, answerEngine) {
   return card;
 }
 
-async function compareSources(question, btn, answerEngine) {
+async function compareSources(question, btn, answerEngine, api = "web") {
   btn.disabled = true;
-  const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), "Running the search with and without the Goggle…");
+  const wait = el("div", { class: "typing" }, el("span", { class: "dots" }, el("i"), el("i"), el("i")), (api === "llm" ? "Running LLM Context with and without the Goggle…" : "Running Web Search with and without the Goggle…"));
   thread.append(wait); scrollDown();
   try {
     const r = await fetch("/api/compare", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, code: $("#code").value }) });
+      body: JSON.stringify({ question, code: $("#code").value, api }) });
     wait.remove();
     if (r.status === 404) throw new Error("The comparison runs on the website version only.");
     const d = await r.json();

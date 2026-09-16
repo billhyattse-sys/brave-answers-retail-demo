@@ -8,6 +8,9 @@
 // Goggles work with the Web Search, LLM Context, and News Search APIs
 // (not the Answers API), so this panel uses Web Search.
 
+const LLM_CONTEXT_URL =
+  env("BRAVE_LLM_CONTEXT_URL") || "https://api.search.brave.com/res/v1/llm/context";
+const LLM_FRESHNESS = env("LLM_FRESHNESS") ?? "pm"; // same window as the answer engine
 const WEB_SEARCH_URL =
   env("BRAVE_WEB_SEARCH_URL") || "https://api.search.brave.com/res/v1/web/search";
 const RESULT_COUNT = 10;
@@ -110,6 +113,53 @@ async function webSearch(query, goggle) {
   };
 }
 
+// Brave LLM Context: the same sources the "LLM Context + Claude" engine reads.
+// Each result is a page (url, title) with extracted snippets; we only list the pages.
+async function llmContextSearch(query, goggle, freshness) {
+  const url = new URL(LLM_CONTEXT_URL);
+  url.searchParams.set("q", query.slice(0, 600));
+  url.searchParams.set("count", "20");
+  url.searchParams.set("maximum_number_of_urls", "10");
+  url.searchParams.set("maximum_number_of_tokens", "2048"); // pages only; keep the payload small
+  if (goggle) url.searchParams.set("goggles", goggle);
+  if (freshness) url.searchParams.set("freshness", freshness);
+
+  const started = Date.now();
+  const resp = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "Accept-Encoding": "gzip",
+      "X-Subscription-Token": searchKey(),
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (resp.status === 401 || resp.status === 403 || resp.status === 422) {
+    throw new Error(`Brave LLM Context refused the key (HTTP ${resp.status}). ` +
+      "Check that the key is enabled for the Search plan.");
+  }
+  if (!resp.ok) {
+    throw new Error(`Brave LLM Context HTTP ${resp.status}: ${(await resp.text()).slice(0, 300)}`);
+  }
+  const data = await resp.json();
+  const generic = data.grounding?.generic || [];
+  const results = generic.filter((g) => g.url).map((g, i) => ({
+    rank: i + 1,
+    title: g.title || "",
+    url: g.url,
+    site: hostOf(g.url),
+  }));
+  return {
+    results,
+    latency_ms: Date.now() - started,
+    diagnostics: {
+      http_status: resp.status,
+      top_level_keys: Object.keys(data),
+      pages_returned: results.length,
+      freshness: freshness || "any date",
+    },
+  };
+}
+
 export default async (req, context) => {
   if (req.method !== "POST") return json(405, { error: "Use POST." });
 
@@ -132,15 +182,37 @@ export default async (req, context) => {
   const searchQuery = question;
   const hosted = env("GOGGLE_URL");
   const goggle = hosted || GOGGLE_RULES;
+  const api = payload.api === "llm" ? "llm" : "web";
   try {
-    // Both searches run at the same time
-    const [standard, goggled] = await Promise.all([
-      webSearch(searchQuery, null),
-      webSearch(searchQuery, goggle),
-    ]);
+    let standard, goggled, endpoint, freshnessUsed = null;
+    if (api === "llm") {
+      // Same question, same freshness window; the only difference is the Goggle
+      freshnessUsed = LLM_FRESHNESS;
+      [standard, goggled] = await Promise.all([
+        llmContextSearch(searchQuery, null, freshnessUsed),
+        llmContextSearch(searchQuery, goggle, freshnessUsed),
+      ]);
+      if (!standard.results.length && !goggled.results.length && freshnessUsed) {
+        freshnessUsed = "";
+        [standard, goggled] = await Promise.all([
+          llmContextSearch(searchQuery, null, ""),
+          llmContextSearch(searchQuery, goggle, ""),
+        ]);
+      }
+      endpoint = "GET /res/v1/llm/context";
+    } else {
+      // Both searches run at the same time
+      [standard, goggled] = await Promise.all([
+        webSearch(searchQuery, null),
+        webSearch(searchQuery, goggle),
+      ]);
+      endpoint = "GET /res/v1/web/search";
+    }
     return json(200, {
       question,
+      api,
       search_query: searchQuery,
+      freshness: api === "llm" ? (freshnessUsed || "any date (no recent pages matched)") : null,
       standard,
       goggled,
       goggle: {
@@ -150,7 +222,7 @@ export default async (req, context) => {
         rules: GOGGLE_RULES,
         sites: ruleSites(GOGGLE_RULES),
       },
-      endpoint: "GET /res/v1/web/search",
+      endpoint,
     });
   } catch (err) {
     return json(502, { error: err.message || "The Brave request failed." });
